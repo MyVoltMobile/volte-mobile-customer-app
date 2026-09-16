@@ -1,43 +1,101 @@
 import type { ReactNode } from 'react';
 import {
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  Colors,
+  Spacing,
+  Typography,
+} from '@/theme/tokens';
+
 type ShellScreenProps = {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
+  header?: ReactNode;
   children?: ReactNode;
+  scroll?: boolean;
+  headerAlign?: 'left' | 'center';
 };
 
 export function ShellScreen({
-  eyebrow = 'VoLTE Mobile',
+  eyebrow,
   title,
   description,
+  header,
   children,
+  scroll = true,
+  headerAlign = 'left',
 }: ShellScreenProps) {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.eyebrow}>
+  const content = (
+    <View style={styles.content}>
+      <View
+        style={[
+          styles.header,
+          headerAlign === 'center' &&
+            styles.headerCentered,
+        ]}
+      >
+        {header}
+
+        {eyebrow ? (
+          <Text
+            style={[
+              styles.eyebrow,
+              headerAlign === 'center' &&
+                styles.textCentered,
+            ]}
+          >
             {eyebrow}
           </Text>
+        ) : null}
 
-          <Text style={styles.title}>
-            {title}
-          </Text>
+        <Text
+          style={[
+            styles.title,
+            headerAlign === 'center' &&
+              styles.textCentered,
+          ]}
+        >
+          {title}
+        </Text>
 
-          <Text style={styles.description}>
+        {description ? (
+          <Text
+            style={[
+              styles.description,
+              headerAlign === 'center' &&
+                styles.textCentered,
+            ]}
+          >
             {description}
           </Text>
-
-          {children}
-        </View>
+        ) : null}
       </View>
+
+      {children}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {scroll ? (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {content}
+        </ScrollView>
+      ) : (
+        <View style={styles.fixedContent}>
+          {content}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -45,31 +103,60 @@ export function ShellScreen({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background.app,
   },
-  container: {
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.xl,
+  },
+
+  fixedContent: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.xl,
   },
+
   content: {
     width: '100%',
-    maxWidth: 520,
+    maxWidth: 560,
     alignSelf: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
+
+  header: {
+    width: '100%',
+    gap: Spacing.md,
+  },
+
+  headerCentered: {
+    alignItems: 'center',
+  },
+
+  textCentered: {
+    textAlign: 'center',
+  },
+
   eyebrow: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontSize: 32,
-    lineHeight: 38,
+    color: Colors.brand.primary,
+    fontSize: Typography.size.caption,
+    lineHeight: Typography.lineHeight.caption,
     fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
+
+  title: {
+    color: Colors.text.primary,
+    fontSize: Typography.size.title,
+    lineHeight: Typography.lineHeight.title,
+    fontWeight: '800',
+  },
+
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    color: Colors.text.secondary,
+    fontSize: Typography.size.body,
+    lineHeight: Typography.lineHeight.body,
   },
 });
