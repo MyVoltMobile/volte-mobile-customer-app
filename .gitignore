@@ -31,7 +31,10 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+# Native client environment files must never contain private server secrets.
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
