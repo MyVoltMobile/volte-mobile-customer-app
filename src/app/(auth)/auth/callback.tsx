@@ -23,6 +23,10 @@ import {
 } from '@/components/shell/shell-screen';
 
 import {
+  parseAuthIntent,
+} from '@/lib/auth/auth-intent';
+
+import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
 
@@ -32,6 +36,10 @@ type CallbackState =
   | 'error';
 
 type CallbackParams = {
+  intent?:
+    | string
+    | string[];
+
   code?:
     | string
     | string[];
@@ -85,6 +93,11 @@ export default function AuthCallbackScreen() {
     'Verifying your secure link...',
   );
 
+  const intent =
+    parseAuthIntent(
+      params.intent,
+    );
+
   const code =
     firstValue(
       params.code,
@@ -112,6 +125,21 @@ export default function AuthCallbackScreen() {
       setState('error');
       setMessage(
         'This secure link could not be verified. Please request a new link and try again.',
+      );
+
+      return;
+    }
+
+    /*
+     * Auth intent is navigation context only.
+     * It never establishes identity or access.
+     */
+    if (!intent) {
+      started.current = true;
+
+      setState('error');
+      setMessage(
+        'This secure link is missing its account request context. Please request a new link and try again.',
       );
 
       return;
@@ -190,6 +218,7 @@ export default function AuthCallbackScreen() {
   }, [
     authError,
     code,
+    intent,
   ]);
 
   const title =
