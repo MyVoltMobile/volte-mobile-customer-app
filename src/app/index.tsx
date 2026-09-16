@@ -45,7 +45,9 @@ export default function WelcomeScreen() {
           <Button
             label="Create account"
             variant="secondary"
-            disabled
+            onPress={() =>
+              router.navigate('/signup')
+            }
           />
         </View>
 
