@@ -40,6 +40,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "96b1caef-2cc4-47c7-a378-173e292b1f35"
+      }
+    },
+    "owner": "voltemobile"
   }
 }
