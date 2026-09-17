@@ -29,6 +29,9 @@ import {
 import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
+import {
+  getCustomerSession,
+} from '@/lib/customer/customer-session';
 
 type CallbackState =
   | 'verifying'
@@ -186,6 +189,24 @@ export default function AuthCallbackScreen() {
           );
         }
 
+        try {
+          await getCustomerSession(
+            data.session.access_token,
+          );
+        } catch {
+          if (!active) {
+            return;
+          }
+
+          setState('error');
+
+          setMessage(
+            'Your secure sign-in was verified, but your VoLTE Mobile customer account could not be loaded. Please contact VoLTE Mobile if this continues.',
+          );
+
+          return;
+        }
+
         if (!active) {
           return;
         }
@@ -195,7 +216,7 @@ export default function AuthCallbackScreen() {
         );
 
         setMessage(
-          'Your secure VoLTE Mobile session has been verified.',
+          'Your secure VoLTE Mobile customer account has been verified.',
         );
       } catch {
         if (!active) {
