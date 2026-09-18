@@ -1,13 +1,16 @@
 import {
   useRouter,
 } from 'expo-router';
+
 import {
   useEffect,
   useMemo,
   useState,
 } from 'react';
+
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -15,19 +18,31 @@ import {
 } from 'react-native';
 
 import {
+  Card,
+} from '@/components/ui/card';
+
+import {
   ShellScreen,
 } from '@/components/shell/shell-screen';
+
 import {
   getCustomerOrders,
   type CustomerOrder,
 } from '@/lib/customer/customer-orders';
+
 import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
+
 import {
   Colors,
+  Radius,
   Spacing,
+  Typography,
 } from '@/theme/tokens';
+
+const SHOP_URL =
+  'https://voltemobile.com/shop';
 
 function customerFirstName(
   fullName: string | null,
@@ -85,7 +100,65 @@ function formatOrderDate(
   );
 }
 
-function QuickAction({
+function ServiceTile({
+  eyebrow,
+  title,
+  description,
+  onPress,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({
+        pressed,
+      }) => [
+        styles.serviceTile,
+        pressed &&
+          styles.tilePressed,
+      ]}
+    >
+      <Text
+        style={
+          styles.tileEyebrow
+        }
+      >
+        {eyebrow}
+      </Text>
+
+      <Text
+        style={
+          styles.tileTitle
+        }
+      >
+        {title}
+      </Text>
+
+      <Text
+        style={
+          styles.tileDescription
+        }
+      >
+        {description}
+      </Text>
+
+      <Text
+        style={
+          styles.tileAction
+        }
+      >
+        View →
+      </Text>
+    </Pressable>
+  );
+}
+
+function UtilityTile({
   title,
   description,
   onPress,
@@ -98,31 +171,36 @@ function QuickAction({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.action,
-        pressed
-          ? styles.actionPressed
-          : null,
+      style={({
+        pressed,
+      }) => [
+        styles.utilityTile,
+        pressed &&
+          styles.tilePressed,
       ]}
     >
       <Text
-        style={styles.actionTitle}
+        style={
+          styles.utilityTitle
+        }
       >
         {title}
       </Text>
 
       <Text
         style={
-          styles.actionDescription
+          styles.utilityDescription
         }
       >
         {description}
       </Text>
 
       <Text
-        style={styles.actionArrow}
+        style={
+          styles.utilityAction
+        }
       >
-        View →
+        Open →
       </Text>
     </Pressable>
   );
@@ -141,7 +219,9 @@ export default function HomeScreen() {
     orders,
     setOrders,
   ] =
-    useState<CustomerOrder[]>([]);
+    useState<CustomerOrder[]>(
+      [],
+    );
 
   const [
     ordersLoading,
@@ -211,148 +291,159 @@ export default function HomeScreen() {
     <ShellScreen
       eyebrow="VoLTE Mobile"
       title={`Hi, ${firstName}`}
-      description="Everything connected to your customer account, in one place."
+      description="Your account, services and support in one place."
     >
-      <View style={styles.content}>
-        <View style={styles.card}>
-          <Text
-            style={styles.sectionLabel}
+      <View
+        style={
+          styles.content
+        }
+      >
+        <Card>
+          <View
+            style={
+              styles.accountCard
+            }
           >
-            MY ACCOUNT
-          </Text>
-
-          <Text style={styles.cardTitle}>
-            {customer?.full_name ||
-              'Customer account'}
-          </Text>
-
-          {customer?.email ? (
-            <Text
-              style={styles.cardMeta}
-            >
-              {customer.email}
-            </Text>
-          ) : null}
-
-          {customer?.phone ? (
-            <Text
-              style={styles.cardMeta}
-            >
-              {customer.phone}
-            </Text>
-          ) : null}
-        </View>
-
-        <View style={styles.card}>
-          <Text
-            style={styles.sectionLabel}
-          >
-            RECENT ONLINE ORDER
-          </Text>
-
-          {ordersLoading ? (
             <View
               style={
-                styles.loadingRow
+                styles.accountHeader
               }
             >
-              <ActivityIndicator
-                size="small"
-              />
-
-              <Text
-                style={
-                  styles.cardMeta
-                }
-              >
-                Loading your latest
-                order…
-              </Text>
-            </View>
-          ) : ordersError ? (
-            <Text
-              style={styles.cardMeta}
-            >
-              Your recent online
-              order is temporarily
-              unavailable.
-            </Text>
-          ) : recentOrder ? (
-            <>
-              <Text
-                style={styles.cardTitle}
-              >
-                {recentItem?.name ||
-                  'VoLTE Mobile order'}
-              </Text>
-
-              <Text
-                style={styles.cardMeta}
-              >
-                {[
-                  recentOrder.receiptNumber,
-                  formatOrderDate(
-                    recentOrder.createdAt,
-                  ),
-                ]
-                  .filter(Boolean)
-                  .join(' • ')}
-              </Text>
-
               <View
                 style={
-                  styles.orderSummary
+                  styles.accountTitleBlock
                 }
               >
                 <Text
                   style={
-                    styles.orderAmount
+                    styles.sectionLabel
                   }
                 >
-                  {formatJmd(
-                    recentOrder.total,
-                  )}
+                  MY ACCOUNT
                 </Text>
 
                 <Text
-                  style={[
-                    styles.orderState,
-                    recentOrder.paid
-                      ? styles.orderStatePaid
-                      : null,
-                  ]}
+                  style={
+                    styles.accountName
+                  }
                 >
-                  {recentOrder.paid
-                    ? 'Paid'
-                    : recentOrder.orderStatus ||
-                      'Order recorded'}
+                  {
+                    customer
+                      ?.full_name ||
+                    'Customer account'
+                  }
                 </Text>
               </View>
-            </>
-          ) : (
-            <Text
-              style={styles.cardMeta}
-            >
-              No online orders yet.
-            </Text>
-          )}
-        </View>
 
-        <View style={styles.section}>
-          <Text
-            style={styles.sectionLabel}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() =>
+                  router.navigate(
+                    '/profile',
+                  )
+                }
+                style={({
+                  pressed,
+                }) => [
+                  styles.profileButton,
+                  pressed &&
+                    styles.tilePressed,
+                ]}
+              >
+                <Text
+                  style={
+                    styles.profileButtonText
+                  }
+                >
+                  Profile
+                </Text>
+              </Pressable>
+            </View>
+
+            <View
+              style={
+                styles.accountDetails
+              }
+            >
+              {customer?.email ? (
+                <Text
+                  style={
+                    styles.accountMeta
+                  }
+                >
+                  {customer.email}
+                </Text>
+              ) : null}
+
+              {customer?.phone ? (
+                <Text
+                  style={
+                    styles.accountMeta
+                  }
+                >
+                  {customer.phone}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        </Card>
+
+
+        <View
+          style={
+            styles.section
+          }
+        >
+          <View
+            style={
+              styles.sectionHeader
+            }
           >
-            YOUR ACCOUNT
-          </Text>
+            <View>
+              <Text
+                style={
+                  styles.sectionLabel
+                }
+              >
+                YOUR SERVICES
+              </Text>
+
+              <Text
+                style={
+                  styles.sectionTitle
+                }
+              >
+                Everything connected
+              </Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.navigate(
+                  '/services',
+                )
+              }
+            >
+              <Text
+                style={
+                  styles.sectionLink
+                }
+              >
+                See all
+              </Text>
+            </Pressable>
+          </View>
 
           <View
             style={
-              styles.actionGrid
+              styles.serviceGrid
             }
           >
-            <QuickAction
+            <ServiceTile
+              eyebrow="DEVICE"
               title="My Devices"
-              description="View device information for your account."
+              description="Phones linked to your account."
               onPress={() =>
                 router.navigate(
                   '/devices',
@@ -360,7 +451,226 @@ export default function HomeScreen() {
               }
             />
 
-            <QuickAction
+            <ServiceTile
+              eyebrow="MOBILE"
+              title="My eSIM"
+              description="Plans and installation."
+              onPress={() =>
+                router.navigate(
+                  '/esim',
+                )
+              }
+            />
+
+            <ServiceTile
+              eyebrow="ENTERTAINMENT"
+              title="My IPTV"
+              description="Package and service access."
+              onPress={() =>
+                router.navigate(
+                  '/iptv',
+                )
+              }
+            />
+          </View>
+        </View>
+
+
+        <View
+          style={
+            styles.section
+          }
+        >
+          <View>
+            <Text
+              style={
+                styles.sectionLabel
+              }
+            >
+              RECENT ACTIVITY
+            </Text>
+
+            <Text
+              style={
+                styles.sectionTitle
+              }
+            >
+              Latest online order
+            </Text>
+          </View>
+
+          <Card>
+            <View
+              style={
+                styles.activityCard
+              }
+            >
+              {ordersLoading ? (
+                <View
+                  style={
+                    styles.loadingRow
+                  }
+                >
+                  <ActivityIndicator
+                    size="small"
+                  />
+
+                  <Text
+                    style={
+                      styles.bodyText
+                    }
+                  >
+                    Loading your latest
+                    order…
+                  </Text>
+                </View>
+              ) : ordersError ? (
+                <Text
+                  style={
+                    styles.bodyText
+                  }
+                >
+                  Your recent online
+                  order is temporarily
+                  unavailable.
+                </Text>
+              ) : recentOrder ? (
+                <>
+                  <View
+                    style={
+                      styles.activityTop
+                    }
+                  >
+                    <View
+                      style={
+                        styles.activityTitleBlock
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.activityTitle
+                        }
+                      >
+                        {
+                          recentItem
+                            ?.name ||
+                          'VoLTE Mobile order'
+                        }
+                      </Text>
+
+                      <Text
+                        style={
+                          styles.bodyText
+                        }
+                      >
+                        {[
+                          recentOrder
+                            .receiptNumber,
+
+                          formatOrderDate(
+                            recentOrder
+                              .createdAt,
+                          ),
+                        ]
+                          .filter(Boolean)
+                          .join(' • ')}
+                      </Text>
+                    </View>
+
+                    <Text
+                      style={
+                        recentOrder.paid
+                          ? styles
+                              .paidStatus
+                          : styles
+                              .orderStatus
+                      }
+                    >
+                      {
+                        recentOrder.paid
+                          ? 'Paid'
+                          : recentOrder
+                              .orderStatus ||
+                            'Recorded'
+                      }
+                    </Text>
+                  </View>
+
+                  <View
+                    style={
+                      styles.activityBottom
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.orderAmount
+                      }
+                    >
+                      {
+                        formatJmd(
+                          recentOrder.total,
+                        )
+                      }
+                    </Text>
+
+                    <Text
+                      style={
+                        styles.activityHint
+                      }
+                    >
+                      Online purchase
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View
+                  style={
+                    styles.emptyActivity
+                  }
+                >
+                  <Text
+                    style={
+                      styles.activityTitle
+                    }
+                  >
+                    No online orders yet
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.bodyText
+                    }
+                  >
+                    Your latest online
+                    purchases will appear
+                    here.
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Card>
+        </View>
+
+
+        <View
+          style={
+            styles.section
+          }
+        >
+          <Text
+            style={
+              styles.sectionLabel
+            }
+          >
+            ACCOUNT TOOLS
+          </Text>
+
+          <View
+            style={
+              styles.utilityGrid
+            }
+          >
+            <UtilityTile
               title="Finance"
               description="Finance and payment information."
               onPress={() =>
@@ -370,26 +680,82 @@ export default function HomeScreen() {
               }
             />
 
-            <QuickAction
+            <UtilityTile
               title="Support"
-              description="Help with your VoLTE Mobile account."
+              description="Get help with your account and services."
               onPress={() =>
                 router.navigate(
                   '/support',
                 )
               }
             />
-
-            <QuickAction
-              title="Profile"
-              description="Your customer account details."
-              onPress={() =>
-                router.navigate(
-                  '/profile',
-                )
-              }
-            />
           </View>
+        </View>
+
+
+        <View
+          style={
+            styles.shopCard
+          }
+        >
+          <Text
+            style={
+              styles.shopEyebrow
+            }
+          >
+            POWERING EVERY CONNECTION!
+          </Text>
+
+          <Text
+            style={
+              styles.shopTitle
+            }
+          >
+            Explore what's next.
+          </Text>
+
+          <Text
+            style={
+              styles.shopDescription
+            }
+          >
+            Discover devices,
+            accessories and services
+            from VoLTE Mobile.
+          </Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Linking
+                .openURL(
+                  SHOP_URL,
+                )
+                .catch(() => {
+                  /*
+                   * Browser launch failure
+                   * leaves the customer
+                   * safely inside the app.
+                   */
+                });
+            }}
+            style={({
+              pressed,
+            }) => [
+              styles.shopButton,
+              pressed &&
+                styles
+                  .shopButtonPressed,
+            ]}
+          >
+            <Text
+              style={
+                styles.shopButtonText
+              }
+            >
+              Shop VoLTE Mobile
+            </Text>
+          </Pressable>
         </View>
       </View>
     </ShellScreen>
@@ -399,125 +765,490 @@ export default function HomeScreen() {
 const styles =
   StyleSheet.create({
     content: {
-      gap: Spacing.xl,
-    },
-
-    card: {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#E3E5EE',
-      borderWidth: 1,
-      borderRadius: 20,
-      padding: Spacing.xl,
-      gap: Spacing.md,
+      gap:
+        Spacing.xl,
     },
 
     section: {
-      gap: Spacing.md,
+      gap:
+        Spacing.md,
+    },
+
+    sectionHeader: {
+      flexDirection:
+        'row',
+      alignItems:
+        'flex-end',
+      justifyContent:
+        'space-between',
+      gap:
+        Spacing.md,
     },
 
     sectionLabel: {
       color:
         Colors.brand.secondary,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '800',
-      letterSpacing: 1,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+      letterSpacing: 0.9,
     },
 
-    cardTitle: {
+    sectionTitle: {
+      marginTop:
+        Spacing.xs,
       color:
         Colors.text.primary,
-      fontSize: 20,
-      lineHeight: 26,
-      fontWeight: '700',
+      fontSize:
+        Typography.size
+          .titleSmall,
+      lineHeight:
+        Typography.lineHeight
+          .titleSmall,
+      fontWeight:
+        '800',
     },
 
-    cardMeta: {
+    sectionLink: {
+      color:
+        Colors.brand.primary,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+      fontWeight:
+        '800',
+    },
+
+    accountCard: {
+      gap:
+        Spacing.lg,
+    },
+
+    accountHeader: {
+      flexDirection:
+        'row',
+      alignItems:
+        'flex-start',
+      justifyContent:
+        'space-between',
+      gap:
+        Spacing.md,
+    },
+
+    accountTitleBlock: {
+      flex: 1,
+      gap:
+        Spacing.xs,
+    },
+
+    accountName: {
+      color:
+        Colors.text.primary,
+      fontSize:
+        Typography.size
+          .titleSmall,
+      lineHeight:
+        Typography.lineHeight
+          .titleSmall,
+      fontWeight:
+        '800',
+    },
+
+    accountDetails: {
+      gap:
+        Spacing.xs,
+    },
+
+    accountMeta: {
       color:
         Colors.text.secondary,
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+    },
+
+    profileButton: {
+      minHeight: 38,
+      paddingHorizontal:
+        Spacing.md,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      borderRadius:
+        Radius.pill,
+      borderWidth: 1,
+      borderColor:
+        Colors.border.default,
+      backgroundColor:
+        Colors.background
+          .subtle,
+    },
+
+    profileButtonText: {
+      color:
+        Colors.brand.primary,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+    },
+
+    serviceGrid: {
+      flexDirection:
+        'row',
+      flexWrap:
+        'wrap',
+      gap:
+        Spacing.md,
+    },
+
+    serviceTile: {
+      flexGrow: 1,
+      flexBasis: '46%',
+      minHeight: 156,
+      padding:
+        Spacing.lg,
+      borderRadius:
+        Radius.lg,
+      borderWidth: 1,
+      borderColor:
+        Colors.border.default,
+      backgroundColor:
+        Colors.background
+          .surface,
+      gap:
+        Spacing.sm,
+    },
+
+    tilePressed: {
+      opacity: 0.66,
+    },
+
+    tileEyebrow: {
+      color:
+        Colors.brand.secondary,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+      letterSpacing: 0.7,
+    },
+
+    tileTitle: {
+      color:
+        Colors.text.primary,
+      fontSize:
+        Typography.size.body,
+      lineHeight:
+        Typography.lineHeight
+          .body,
+      fontWeight:
+        '800',
+    },
+
+    tileDescription: {
+      flexGrow: 1,
+      color:
+        Colors.text.secondary,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+    },
+
+    tileAction: {
+      color:
+        Colors.brand.primary,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+      fontWeight:
+        '800',
+    },
+
+    activityCard: {
+      gap:
+        Spacing.lg,
     },
 
     loadingRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: Spacing.md,
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      gap:
+        Spacing.md,
     },
 
-    orderSummary: {
-      flexDirection: 'row',
-      alignItems: 'center',
+    activityTop: {
+      flexDirection:
+        'row',
+      alignItems:
+        'flex-start',
       justifyContent:
         'space-between',
-      gap: Spacing.md,
-      marginTop: 2,
+      gap:
+        Spacing.md,
+    },
+
+    activityTitleBlock: {
+      flex: 1,
+      gap:
+        Spacing.xs,
+    },
+
+    activityTitle: {
+      color:
+        Colors.text.primary,
+      fontSize:
+        Typography.size.body,
+      lineHeight:
+        Typography.lineHeight
+          .body,
+      fontWeight:
+        '800',
+    },
+
+    bodyText: {
+      color:
+        Colors.text.secondary,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+    },
+
+    paidStatus: {
+      color:
+        Colors.status.success,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+    },
+
+    orderStatus: {
+      color:
+        Colors.text.secondary,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+    },
+
+    activityBottom: {
+      paddingTop:
+        Spacing.md,
+      borderTopWidth: 1,
+      borderTopColor:
+        Colors.border.default,
+      flexDirection:
+        'row',
+      alignItems:
+        'flex-end',
+      justifyContent:
+        'space-between',
+      gap:
+        Spacing.md,
     },
 
     orderAmount: {
       color:
         Colors.text.primary,
-      fontSize: 18,
-      lineHeight: 24,
-      fontWeight: '800',
+      fontSize: 20,
+      lineHeight: 26,
+      fontWeight:
+        '800',
     },
 
-    orderState: {
+    activityHint: {
       color:
         Colors.text.secondary,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '700',
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '600',
     },
 
-    orderStatePaid: {
-      color: '#16854B',
+    emptyActivity: {
+      gap:
+        Spacing.xs,
     },
 
-    actionGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: Spacing.md,
+    utilityGrid: {
+      flexDirection:
+        'row',
+      gap:
+        Spacing.md,
     },
 
-    action: {
-      flexGrow: 1,
-      flexBasis: '46%',
-      minHeight: 142,
-      backgroundColor:
-        '#FFFFFF',
-      borderColor: '#E3E5EE',
+    utilityTile: {
+      flex: 1,
+      minHeight: 138,
+      padding:
+        Spacing.lg,
+      borderRadius:
+        Radius.lg,
       borderWidth: 1,
-      borderRadius: 18,
-      padding: Spacing.xl,
-      gap: Spacing.md,
+      borderColor:
+        Colors.border.default,
+      backgroundColor:
+        Colors.background
+          .surface,
+      gap:
+        Spacing.sm,
     },
 
-    actionPressed: {
-      opacity: 0.72,
-    },
-
-    actionTitle: {
+    utilityTitle: {
       color:
         Colors.text.primary,
-      fontSize: 16,
-      lineHeight: 21,
-      fontWeight: '800',
+      fontSize:
+        Typography.size.body,
+      lineHeight:
+        Typography.lineHeight
+          .body,
+      fontWeight:
+        '800',
     },
 
-    actionDescription: {
+    utilityDescription: {
+      flexGrow: 1,
       color:
         Colors.text.secondary,
-      fontSize: 13,
-      lineHeight: 19,
-      flexGrow: 1,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
     },
 
-    actionArrow: {
+    utilityAction: {
       color:
-        Colors.brand.secondary,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '800',
+        Colors.brand.primary,
+      fontSize:
+        Typography.size
+          .bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+      fontWeight:
+        '800',
+    },
+
+    shopCard: {
+      padding:
+        Spacing.xl,
+      borderRadius:
+        Radius.lg,
+      backgroundColor:
+        Colors.brand.primary,
+      gap:
+        Spacing.md,
+    },
+
+    shopEyebrow: {
+      color:
+        Colors.text.inverse,
+      opacity: 0.82,
+      fontSize:
+        Typography.size
+          .caption,
+      lineHeight:
+        Typography.lineHeight
+          .caption,
+      fontWeight:
+        '800',
+      letterSpacing: 0.8,
+    },
+
+    shopTitle: {
+      color:
+        Colors.text.inverse,
+      fontSize: 24,
+      lineHeight: 30,
+      fontWeight:
+        '800',
+    },
+
+    shopDescription: {
+      color:
+        Colors.text.inverse,
+      opacity: 0.86,
+      fontSize:
+        Typography.size.body,
+      lineHeight:
+        Typography.lineHeight
+          .body,
+    },
+
+    shopButton: {
+      minHeight: 50,
+      marginTop:
+        Spacing.xs,
+      borderRadius:
+        Radius.md,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        Colors.background
+          .surface,
+    },
+
+    shopButtonPressed: {
+      opacity: 0.84,
+    },
+
+    shopButtonText: {
+      color:
+        Colors.brand.primary,
+      fontSize:
+        Typography.size.body,
+      lineHeight:
+        Typography.lineHeight
+          .body,
+      fontWeight:
+        '800',
     },
   });
