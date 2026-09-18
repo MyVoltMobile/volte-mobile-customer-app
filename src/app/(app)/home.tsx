@@ -10,6 +10,7 @@ import {
 
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Pressable,
   StyleSheet,
@@ -43,6 +44,11 @@ import {
 
 const SHOP_URL =
   'https://voltemobile.com/shop';
+
+const HOME_ICON =
+  require(
+    '../../../assets/brand/volte-mobile-icon.png',
+  );
 
 function customerFirstName(
   fullName: string | null,
@@ -97,6 +103,53 @@ function formatOrderDate(
       day: 'numeric',
       year: 'numeric',
     },
+  );
+}
+
+function HomeHeader() {
+  return (
+    <View
+      style={
+        styles.topBar
+      }
+    >
+      <Image
+        source={
+          HOME_ICON
+        }
+        resizeMode="contain"
+        accessibilityLabel="VoLTE Mobile"
+        style={
+          styles.topLogo
+        }
+      />
+
+      <View
+        accessibilityRole="image"
+        accessibilityLabel="Search"
+        style={
+          styles.searchButton
+        }
+      >
+        <View
+          style={
+            styles.searchIcon
+          }
+        >
+          <View
+            style={
+              styles.searchLens
+            }
+          />
+
+          <View
+            style={
+              styles.searchHandle
+            }
+          />
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -289,190 +342,79 @@ export default function HomeScreen() {
 
   return (
     <ShellScreen
-      eyebrow="VoLTE Mobile"
+      header={
+        <HomeHeader />
+      }
       title={`Hi, ${firstName}`}
-      description="Your account, services and support in one place."
     >
       <View
         style={
           styles.content
         }
       >
-        <Card>
-          <View
-            style={
-              styles.accountCard
-            }
-          >
-            <View
-              style={
-                styles.accountHeader
-              }
-            >
-              <View
-                style={
-                  styles.accountTitleBlock
-                }
-              >
-                <Text
-                  style={
-                    styles.sectionLabel
-                  }
-                >
-                  MY ACCOUNT
-                </Text>
-
-                <Text
-                  style={
-                    styles.accountName
-                  }
-                >
-                  {
-                    customer
-                      ?.full_name ||
-                    'Customer account'
-                  }
-                </Text>
-              </View>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() =>
-                  router.navigate(
-                    '/profile',
-                  )
-                }
-                style={({
-                  pressed,
-                }) => [
-                  styles.profileButton,
-                  pressed &&
-                    styles.tilePressed,
-                ]}
-              >
-                <Text
-                  style={
-                    styles.profileButtonText
-                  }
-                >
-                  Profile
-                </Text>
-              </Pressable>
-            </View>
-
-            <View
-              style={
-                styles.accountDetails
-              }
-            >
-              {customer?.email ? (
-                <Text
-                  style={
-                    styles.accountMeta
-                  }
-                >
-                  {customer.email}
-                </Text>
-              ) : null}
-
-              {customer?.phone ? (
-                <Text
-                  style={
-                    styles.accountMeta
-                  }
-                >
-                  {customer.phone}
-                </Text>
-              ) : null}
-            </View>
-          </View>
-        </Card>
-
-
         <View
           style={
-            styles.section
+            styles.shopCard
           }
         >
-          <View
+          <Text
             style={
-              styles.sectionHeader
+              styles.shopEyebrow
             }
           >
-            <View>
-              <Text
-                style={
-                  styles.sectionLabel
-                }
-              >
-                YOUR SERVICES
-              </Text>
+            POWERING EVERY CONNECTION!
+          </Text>
 
-              <Text
-                style={
-                  styles.sectionTitle
-                }
-              >
-                Everything connected
-              </Text>
-            </View>
+          <Text
+            style={
+              styles.shopTitle
+            }
+          >
+            Explore what's next.
+          </Text>
 
-            <Pressable
-              accessibilityRole="button"
-              onPress={() =>
-                router.navigate(
-                  '/services',
+          <Text
+            style={
+              styles.shopDescription
+            }
+          >
+            Discover devices,
+            accessories and services
+            from VoLTE Mobile.
+          </Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Linking
+                .openURL(
+                  SHOP_URL,
                 )
+                .catch(() => {
+                  /*
+                   * Browser launch failure
+                   * leaves the customer
+                   * safely inside the app.
+                   */
+                });
+            }}
+            style={({
+              pressed,
+            }) => [
+              styles.shopButton,
+              pressed &&
+                styles
+                  .shopButtonPressed,
+            ]}
+          >
+            <Text
+              style={
+                styles.shopButtonText
               }
             >
-              <Text
-                style={
-                  styles.sectionLink
-                }
-              >
-                See all
-              </Text>
-            </Pressable>
-          </View>
-
-          <View
-            style={
-              styles.serviceGrid
-            }
-          >
-            <ServiceTile
-              eyebrow="DEVICE"
-              title="My Devices"
-              description="Phones linked to your account."
-              onPress={() =>
-                router.navigate(
-                  '/devices',
-                )
-              }
-            />
-
-            <ServiceTile
-              eyebrow="MOBILE"
-              title="My eSIM"
-              description="Plans and installation."
-              onPress={() =>
-                router.navigate(
-                  '/esim',
-                )
-              }
-            />
-
-            <ServiceTile
-              eyebrow="ENTERTAINMENT"
-              title="My IPTV"
-              description="Package and service access."
-              onPress={() =>
-                router.navigate(
-                  '/iptv',
-                )
-              }
-            />
-          </View>
+              Shop VoLTE Mobile
+            </Text>
+          </Pressable>
         </View>
 
 
@@ -657,6 +599,93 @@ export default function HomeScreen() {
             styles.section
           }
         >
+          <View
+            style={
+              styles.sectionHeader
+            }
+          >
+            <View>
+              <Text
+                style={
+                  styles.sectionLabel
+                }
+              >
+                YOUR SERVICES
+              </Text>
+
+              <Text
+                style={
+                  styles.sectionTitle
+                }
+              >
+                Everything connected
+              </Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.navigate(
+                  '/services',
+                )
+              }
+            >
+              <Text
+                style={
+                  styles.sectionLink
+                }
+              >
+                See all
+              </Text>
+            </Pressable>
+          </View>
+
+          <View
+            style={
+              styles.serviceGrid
+            }
+          >
+            <ServiceTile
+              eyebrow="DEVICE"
+              title="My Devices"
+              description="Phones linked to your account."
+              onPress={() =>
+                router.navigate(
+                  '/devices',
+                )
+              }
+            />
+
+            <ServiceTile
+              eyebrow="MOBILE"
+              title="My eSIM"
+              description="Plans and installation."
+              onPress={() =>
+                router.navigate(
+                  '/esim',
+                )
+              }
+            />
+
+            <ServiceTile
+              eyebrow="ENTERTAINMENT"
+              title="My IPTV"
+              description="Package and service access."
+              onPress={() =>
+                router.navigate(
+                  '/iptv',
+                )
+              }
+            />
+          </View>
+        </View>
+
+
+        <View
+          style={
+            styles.section
+          }
+        >
           <Text
             style={
               styles.sectionLabel
@@ -691,72 +720,6 @@ export default function HomeScreen() {
             />
           </View>
         </View>
-
-
-        <View
-          style={
-            styles.shopCard
-          }
-        >
-          <Text
-            style={
-              styles.shopEyebrow
-            }
-          >
-            POWERING EVERY CONNECTION!
-          </Text>
-
-          <Text
-            style={
-              styles.shopTitle
-            }
-          >
-            Explore what's next.
-          </Text>
-
-          <Text
-            style={
-              styles.shopDescription
-            }
-          >
-            Discover devices,
-            accessories and services
-            from VoLTE Mobile.
-          </Text>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              void Linking
-                .openURL(
-                  SHOP_URL,
-                )
-                .catch(() => {
-                  /*
-                   * Browser launch failure
-                   * leaves the customer
-                   * safely inside the app.
-                   */
-                });
-            }}
-            style={({
-              pressed,
-            }) => [
-              styles.shopButton,
-              pressed &&
-                styles
-                  .shopButtonPressed,
-            ]}
-          >
-            <Text
-              style={
-                styles.shopButtonText
-              }
-            >
-              Shop VoLTE Mobile
-            </Text>
-          </Pressable>
-        </View>
       </View>
     </ShellScreen>
   );
@@ -764,6 +727,75 @@ export default function HomeScreen() {
 
 const styles =
   StyleSheet.create({
+    topBar: {
+      minHeight: 48,
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      justifyContent:
+        'space-between',
+    },
+
+    topLogo: {
+      width: 38,
+      height: 42,
+    },
+
+    searchButton: {
+      width: 42,
+      height: 42,
+      borderRadius:
+        Radius.pill,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      borderWidth: 1,
+      borderColor:
+        Colors.border.default,
+      backgroundColor:
+        Colors.background
+          .surface,
+    },
+
+    searchIcon: {
+      width: 22,
+      height: 22,
+      position:
+        'relative',
+    },
+
+    searchLens: {
+      position:
+        'absolute',
+      left: 1,
+      top: 1,
+      width: 14,
+      height: 14,
+      borderRadius: 8,
+      borderWidth: 2,
+      borderColor:
+        Colors.text.primary,
+    },
+
+    searchHandle: {
+      position:
+        'absolute',
+      right: 0,
+      bottom: 3,
+      width: 8,
+      height: 2,
+      borderRadius: 1,
+      backgroundColor:
+        Colors.text.primary,
+      transform: [
+        {
+          rotate: '45deg',
+        },
+      ],
+    },
+
     content: {
       gap:
         Spacing.xl,
@@ -823,88 +855,6 @@ const styles =
       lineHeight:
         Typography.lineHeight
           .bodySmall,
-      fontWeight:
-        '800',
-    },
-
-    accountCard: {
-      gap:
-        Spacing.lg,
-    },
-
-    accountHeader: {
-      flexDirection:
-        'row',
-      alignItems:
-        'flex-start',
-      justifyContent:
-        'space-between',
-      gap:
-        Spacing.md,
-    },
-
-    accountTitleBlock: {
-      flex: 1,
-      gap:
-        Spacing.xs,
-    },
-
-    accountName: {
-      color:
-        Colors.text.primary,
-      fontSize:
-        Typography.size
-          .titleSmall,
-      lineHeight:
-        Typography.lineHeight
-          .titleSmall,
-      fontWeight:
-        '800',
-    },
-
-    accountDetails: {
-      gap:
-        Spacing.xs,
-    },
-
-    accountMeta: {
-      color:
-        Colors.text.secondary,
-      fontSize:
-        Typography.size
-          .bodySmall,
-      lineHeight:
-        Typography.lineHeight
-          .bodySmall,
-    },
-
-    profileButton: {
-      minHeight: 38,
-      paddingHorizontal:
-        Spacing.md,
-      alignItems:
-        'center',
-      justifyContent:
-        'center',
-      borderRadius:
-        Radius.pill,
-      borderWidth: 1,
-      borderColor:
-        Colors.border.default,
-      backgroundColor:
-        Colors.background
-          .subtle,
-    },
-
-    profileButtonText: {
-      color:
-        Colors.brand.primary,
-      fontSize:
-        Typography.size
-          .caption,
-      lineHeight:
-        Typography.lineHeight
-          .caption,
       fontWeight:
         '800',
     },
@@ -1181,7 +1131,7 @@ const styles =
       borderRadius:
         Radius.lg,
       backgroundColor:
-        Colors.brand.primary,
+        Colors.brand.secondary,
       gap:
         Spacing.md,
     },
@@ -1242,7 +1192,7 @@ const styles =
 
     shopButtonText: {
       color:
-        Colors.brand.primary,
+        Colors.brand.secondary,
       fontSize:
         Typography.size.body,
       lineHeight:

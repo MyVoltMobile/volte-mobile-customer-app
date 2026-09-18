@@ -11,6 +11,10 @@ import {
 } from 'react-native';
 
 import {
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+
+import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
@@ -43,6 +47,15 @@ export default function CustomerAppLayout() {
   const {
     status,
   } = useCustomerSession();
+
+  const insets =
+    useSafeAreaInsets();
+
+  const bottomInset =
+    Math.max(
+      insets.bottom,
+      18,
+    );
 
   if (status === 'loading') {
     return (
@@ -83,10 +96,19 @@ export default function CustomerAppLayout() {
         tabBarInactiveTintColor:
           Colors.text.secondary,
 
+        tabBarHideOnKeyboard:
+          true,
+
         tabBarStyle: {
-          minHeight: 70,
-          paddingTop: 7,
-          paddingBottom: 8,
+          height:
+            64 +
+            bottomInset,
+          minHeight:
+            64 +
+            bottomInset,
+          paddingTop: 8,
+          paddingBottom:
+            bottomInset,
           backgroundColor:
             Colors.background
               .surface,
@@ -94,9 +116,14 @@ export default function CustomerAppLayout() {
             Colors.border.default,
         },
 
+        tabBarItemStyle: {
+          paddingTop: 2,
+        },
+
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
+          marginBottom: 1,
         },
       }}
     >
