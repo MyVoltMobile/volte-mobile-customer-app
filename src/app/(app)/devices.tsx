@@ -6,6 +6,7 @@ import {
 
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +16,10 @@ import {
 import {
   ShellScreen,
 } from '@/components/shell/shell-screen';
+
+import {
+  Button,
+} from '@/components/ui/button';
 
 import {
   Card,
@@ -37,6 +42,9 @@ type LoadState =
   | 'loading'
   | 'ready'
   | 'error';
+
+const SHOP_URL =
+  'https://voltemobile.com/shop';
 
 const ownershipLabels:
   Record<
@@ -430,32 +438,55 @@ export default function DevicesScreen() {
       {loadState ===
         'ready' &&
       devices.length === 0 ? (
-        <Card>
-          <View
-            style={
-              styles.stateContent
-            }
-          >
-            <Text
+        <View
+          style={
+            styles.emptyState
+          }
+        >
+          <Card>
+            <View
               style={
-                styles.stateTitle
+                styles.stateContent
               }
             >
-              No devices yet
-            </Text>
+              <Text
+                style={
+                  styles.stateTitle
+                }
+              >
+                No devices yet
+              </Text>
 
-            <Text
-              style={
-                styles.stateText
-              }
-            >
-              No devices are
-              currently linked
-              to your VoLTE
-              Mobile account.
-            </Text>
-          </View>
-        </Card>
+              <Text
+                style={
+                  styles.stateText
+                }
+              >
+                No devices are
+                currently linked
+                to your VoLTE
+                Mobile account.
+              </Text>
+            </View>
+          </Card>
+
+          <Button
+            label="Shop Now"
+            onPress={() => {
+              void Linking
+                .openURL(
+                  SHOP_URL,
+                )
+                .catch(() => {
+                  /*
+                   * Browser launch failure
+                   * leaves the customer
+                   * safely in the app.
+                   */
+                });
+            }}
+          />
+        </View>
       ) : null}
 
       {loadState ===
@@ -554,6 +585,11 @@ const styles =
           .bodySmall,
       fontWeight:
         '700',
+    },
+
+    emptyState: {
+      gap:
+        Spacing.md,
     },
 
     deviceList: {
