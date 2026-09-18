@@ -1,5 +1,9 @@
-import { useRouter } from 'expo-router';
 import {
+  Redirect,
+  useRouter,
+} from 'expo-router';
+import {
+  ActivityIndicator,
   StyleSheet,
   Text,
   View,
@@ -10,6 +14,9 @@ import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
 import { AppIdentity } from '@/config/app';
 import {
+  useCustomerSession,
+} from '@/lib/customer/customer-session-provider';
+import {
   Colors,
   Spacing,
   Typography,
@@ -17,6 +24,33 @@ import {
 
 export default function WelcomeScreen() {
   const router = useRouter();
+
+  const {
+    status,
+  } = useCustomerSession();
+
+  if (status === 'loading') {
+    return (
+      <SafeAreaView
+        style={styles.screen}
+      >
+        <ActivityIndicator
+          size="small"
+          style={{
+            alignSelf: 'center',
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (
+    status === 'authenticated'
+  ) {
+    return (
+      <Redirect href="/home" />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.screen}>

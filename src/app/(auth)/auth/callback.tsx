@@ -12,6 +12,7 @@ import {
 
 import {
   useLocalSearchParams,
+  useRouter,
 } from 'expo-router';
 
 import {
@@ -30,8 +31,8 @@ import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
 import {
-  getCustomerSession,
-} from '@/lib/customer/customer-session';
+  useCustomerSession,
+} from '@/lib/customer/customer-session-provider';
 
 type CallbackState =
   | 'verifying'
@@ -76,6 +77,13 @@ function firstValue(
 }
 
 export default function AuthCallbackScreen() {
+
+  const router =
+    useRouter();
+
+  const {
+    verifyCustomerSession,
+  } = useCustomerSession();
   const params =
     useLocalSearchParams<
       CallbackParams
@@ -190,8 +198,8 @@ export default function AuthCallbackScreen() {
         }
 
         try {
-          await getCustomerSession(
-            data.session.access_token,
+          await verifyCustomerSession(
+            data.session,
           );
         } catch {
           if (!active) {
@@ -218,6 +226,8 @@ export default function AuthCallbackScreen() {
         setMessage(
           'Your secure VoLTE Mobile customer account has been verified.',
         );
+
+        router.replace('/home');
       } catch {
         if (!active) {
           return;
@@ -240,6 +250,8 @@ export default function AuthCallbackScreen() {
     authError,
     code,
     intent,
+    router,
+    verifyCustomerSession,
   ]);
 
   const title =
