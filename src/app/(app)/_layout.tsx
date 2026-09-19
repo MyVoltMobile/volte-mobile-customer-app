@@ -33,8 +33,8 @@ function TabGlyph({
     <Text
       style={{
         color,
-        fontSize: 18,
-        lineHeight: 22,
+        fontSize: 16,
+        lineHeight: 20,
         fontWeight: '700',
       }}
     >
@@ -100,13 +100,9 @@ export default function CustomerAppLayout() {
           true,
 
         tabBarStyle: {
-          height:
-            64 +
-            bottomInset,
-          minHeight:
-            64 +
-            bottomInset,
-          paddingTop: 8,
+          height: 58 + bottomInset,
+          minHeight: 58 + bottomInset,
+          paddingTop: 6,
           paddingBottom:
             bottomInset,
           backgroundColor:
@@ -121,9 +117,9 @@ export default function CustomerAppLayout() {
         },
 
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          marginBottom: 1,
+          fontSize: 10,
+          fontWeight: '600',
+          marginBottom: 0,
         },
       }}
     >

@@ -124,8 +124,10 @@ function SearchIcon() {
 }
 
 function FixedHeader({
+  name,
   onSearch,
 }: {
+  name: string;
   onSearch: () => void;
 }) {
   return (
@@ -171,6 +173,15 @@ function FixedHeader({
           <SearchIcon />
         </Pressable>
       </View>
+
+      <Text
+        style={
+          styles.fixedGreeting
+        }
+        numberOfLines={1}
+      >
+        Hi, {name}
+      </Text>
     </SafeAreaView>
   );
 }
@@ -466,6 +477,7 @@ export default function HomeScreen() {
       }
     >
       <FixedHeader
+        name={name}
         onSearch={() =>
           router.navigate(
             '/search',
@@ -490,14 +502,6 @@ export default function HomeScreen() {
             styles.hero
           }
         >
-          <Text
-            style={
-              styles.greeting
-            }
-          >
-            Hi, {name}
-          </Text>
-
           <View
             style={
               styles.shopCard
@@ -644,12 +648,12 @@ const styles =
     headerSafe: {
       backgroundColor:
         HEADER_BLACK,
+      paddingBottom: 12,
     },
 
     header: {
-      minHeight: 76,
-      paddingHorizontal:
-        Spacing.xl,
+      minHeight: 54,
+      paddingHorizontal: 20,
       backgroundColor:
         HEADER_BLACK,
       flexDirection:
@@ -661,14 +665,14 @@ const styles =
     },
 
     logo: {
-      width: 43,
-      height: 48,
+      width: 34,
+      height: 38,
     },
 
     searchButton: {
-      width: 52,
-      height: 52,
-      borderRadius: 26,
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       alignItems:
         'center',
       justifyContent:
@@ -685,8 +689,8 @@ const styles =
     },
 
     searchIcon: {
-      width: 26,
-      height: 26,
+      width: 22,
+      height: 22,
       position:
         'relative',
     },
@@ -696,10 +700,10 @@ const styles =
         'absolute',
       left: 2,
       top: 1,
-      width: 17,
-      height: 17,
-      borderRadius: 9,
-      borderWidth: 2.5,
+      width: 15,
+      height: 15,
+      borderRadius: 8,
+      borderWidth: 2.2,
       borderColor:
         HEADER_BLACK,
     },
@@ -709,8 +713,8 @@ const styles =
         'absolute',
       right: 1,
       bottom: 4,
-      width: 11,
-      height: 2.5,
+      width: 9,
+      height: 2.2,
       borderRadius: 2,
       backgroundColor:
         HEADER_BLACK,
@@ -734,38 +738,32 @@ const styles =
 
     hero: {
       width: '100%',
-      paddingHorizontal:
-        Spacing.xl,
-      paddingTop:
-        Spacing.md,
-      paddingBottom: 30,
-      gap:
-        Spacing.xl,
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 18,
+      gap: 0,
       backgroundColor:
         HEADER_BLACK,
     },
 
-    greeting: {
+    fixedGreeting: {
+      paddingHorizontal: 20,
+      paddingTop: 2,
       color:
         Colors.text.inverse,
-      fontSize:
-        Typography.size.display,
-      lineHeight:
-        Typography.lineHeight.display,
+      fontSize: 27,
+      lineHeight: 32,
       fontWeight:
         '700',
       letterSpacing:
-        -0.8,
+        -0.5,
     },
 
     shopCard: {
       width: '100%',
-      padding:
-        Spacing.xl,
-      gap:
-        Spacing.lg,
-      borderRadius:
-        Radius.xl,
+      padding: 20,
+      gap: 12,
+      borderRadius: 20,
       backgroundColor:
         Colors.brand.secondary,
     },
@@ -773,8 +771,7 @@ const styles =
     shopEyebrow: {
       color:
         Colors.text.inverse,
-      fontSize:
-        Typography.size.caption,
+      fontSize: 11,
       fontWeight:
         '700',
       letterSpacing: 1,
@@ -783,10 +780,8 @@ const styles =
     shopTitle: {
       color:
         Colors.text.inverse,
-      fontSize:
-        Typography.size.title,
-      lineHeight:
-        Typography.lineHeight.title,
+      fontSize: 25,
+      lineHeight: 30,
       fontWeight:
         '700',
     },
@@ -794,14 +789,12 @@ const styles =
     shopDescription: {
       color:
         '#FBE7F1',
-      fontSize:
-        Typography.size.body,
-      lineHeight:
-        Typography.lineHeight.body,
+      fontSize: 15,
+      lineHeight: 22,
     },
 
     shopButton: {
-      minHeight: 54,
+      minHeight: 48,
       marginTop:
         Spacing.xs,
       paddingHorizontal:
@@ -823,24 +816,19 @@ const styles =
     shopButtonText: {
       color:
         Colors.brand.secondary,
-      fontSize:
-        Typography.size.body,
+      fontSize: 15,
       fontWeight:
         '700',
     },
 
     content: {
-      paddingHorizontal:
-        Spacing.xl,
-      paddingTop:
-        Spacing.xl,
-      gap:
-        Spacing.xl,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      gap: 20,
     },
 
     section: {
-      gap:
-        Spacing.md,
+      gap: 10,
     },
 
     sectionHeader: {
@@ -863,8 +851,7 @@ const styles =
     sectionLabel: {
       color:
         Colors.brand.secondary,
-      fontSize:
-        Typography.size.caption,
+      fontSize: 11,
       fontWeight:
         '700',
       letterSpacing: 1,
@@ -873,8 +860,8 @@ const styles =
     sectionTitle: {
       color:
         Colors.text.primary,
-      fontSize:
-        Typography.size.titleSmall,
+      fontSize: 18,
+      lineHeight: 23,
       fontWeight:
         '700',
     },
@@ -882,8 +869,7 @@ const styles =
     sectionAction: {
       color:
         Colors.brand.primary,
-      fontSize:
-        Typography.size.bodySmall,
+      fontSize: 13,
       fontWeight:
         '700',
     },
@@ -922,8 +908,7 @@ const styles =
     orderTitle: {
       color:
         Colors.text.primary,
-      fontSize:
-        Typography.size.body,
+      fontSize: 15,
       fontWeight:
         '700',
     },
@@ -931,10 +916,8 @@ const styles =
     bodyText: {
       color:
         Colors.text.secondary,
-      fontSize:
-        Typography.size.bodySmall,
-      lineHeight:
-        Typography.lineHeight.bodySmall,
+      fontSize: 14,
+      lineHeight: 20,
     },
 
     paidStatus: {
@@ -974,8 +957,7 @@ const styles =
     orderAmount: {
       color:
         Colors.text.primary,
-      fontSize:
-        Typography.size.titleSmall,
+      fontSize: 18,
       fontWeight:
         '700',
     },
@@ -993,9 +975,8 @@ const styles =
     },
 
     offerCard: {
-      minHeight: 128,
-      padding:
-        Spacing.lg,
+      minHeight: 108,
+      padding: 16,
       borderWidth: 1,
       borderColor:
         Colors.border.default,
@@ -1037,8 +1018,7 @@ const styles =
     offerTitle: {
       color:
         Colors.text.primary,
-      fontSize:
-        Typography.size.titleSmall,
+      fontSize: 18,
       fontWeight:
         '700',
     },
@@ -1046,16 +1026,14 @@ const styles =
     offerDescription: {
       color:
         Colors.text.secondary,
-      fontSize:
-        Typography.size.bodySmall,
-      lineHeight:
-        Typography.lineHeight.bodySmall,
+      fontSize: 14,
+      lineHeight: 20,
     },
 
     offerArrow: {
       color:
         Colors.brand.primary,
-      fontSize: 34,
+      fontSize: 28,
       fontWeight:
         '400',
     },
