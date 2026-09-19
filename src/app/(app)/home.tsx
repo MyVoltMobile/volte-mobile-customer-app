@@ -269,7 +269,7 @@ function HeroSlide({
           styles.heroShade,
           !fallback && {
             backgroundColor:
-              'rgba(4, 4, 8, 0.28)',
+              'rgba(4, 4, 8, 0.38)',
           },
         ]}
       />
@@ -291,7 +291,7 @@ function HeroSlide({
         <Text
           numberOfLines={
             promotion
-              ? 3
+              ? 2
               : undefined
           }
           style={
@@ -309,7 +309,7 @@ function HeroSlide({
         </Text>
 
         <Text
-          numberOfLines={3}
+          numberOfLines={2}
           style={
             styles.heroBody
           }
@@ -373,7 +373,7 @@ function Hero() {
 
   const slideWidth =
     Math.max(
-      windowWidth - 32,
+      windowWidth,
       280,
     );
 
@@ -1137,28 +1137,24 @@ const styles =
     },
 
     heroZone: {
-      paddingHorizontal: 16,
-      paddingTop: 10,
-      paddingBottom: 14,
+      position: 'relative',
       backgroundColor:
         BLACK,
     },
 
     heroCarousel: {
-      height: 272,
+      height: 304,
     },
 
     heroCard: {
-      height: 272,
-      borderRadius: 22,
+      height: 304,
       overflow:
         'hidden',
       justifyContent:
-        'center',
+        'flex-end',
     },
 
     heroImage: {
-      borderRadius: 22,
     },
 
     heroShade: {
@@ -1168,14 +1164,19 @@ const styles =
       bottom: 0,
       left: 0,
       backgroundColor:
-        'rgba(4, 4, 8, 0.08)',
+        'rgba(4, 4, 8, 0.12)',
     },
 
     heroContent: {
-      width: '64%',
-      paddingLeft: 20,
-      paddingVertical: 22,
-      gap: 12,
+      flex: 1,
+      width: '68%',
+      justifyContent:
+        'flex-end',
+      paddingLeft: 28,
+      paddingRight: 12,
+      paddingTop: 34,
+      paddingBottom: 26,
+      gap: 9,
     },
 
     heroEyebrow: {
@@ -1191,26 +1192,42 @@ const styles =
     heroTitle: {
       color:
         '#FFFFFF',
-      fontSize: 30,
-      lineHeight: 34,
+      fontSize: 28,
+      lineHeight: 31,
       fontWeight:
         '700',
       letterSpacing:
-        -0.8,
+        -0.7,
+      textShadowColor:
+        'rgba(0, 0, 0, 0.20)',
+      textShadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      textShadowRadius: 4,
     },
 
     heroBody: {
       color:
-        '#E4DCE3',
+        '#F0EAF0',
       fontSize: 14,
-      lineHeight: 20,
+      lineHeight: 19,
+      textShadowColor:
+        'rgba(0, 0, 0, 0.24)',
+      textShadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      textShadowRadius: 3,
     },
 
     heroButton: {
-      minHeight: 46,
-      marginTop: 4,
-      paddingHorizontal: 16,
-      borderRadius: 24,
+      minHeight: 42,
+      marginTop: 6,
+      paddingHorizontal: 18,
+      borderRadius: 22,
+      alignSelf:
+        'flex-start',
       flexDirection:
         'row',
       alignItems:
@@ -1240,8 +1257,11 @@ const styles =
     },
 
     carouselDots: {
-      height: 20,
-      paddingTop: 10,
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 10,
+      height: 10,
       flexDirection:
         'row',
       alignItems:
@@ -1256,7 +1276,7 @@ const styles =
       height: 7,
       borderRadius: 4,
       backgroundColor:
-        '#3B404A',
+        'rgba(255, 255, 255, 0.62)',
     },
 
     carouselDotActive: {
