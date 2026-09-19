@@ -18,6 +18,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import {
@@ -28,6 +29,11 @@ import {
   getCustomerOrders,
   type CustomerOrder,
 } from '@/lib/customer/customer-orders';
+
+import {
+  getCustomerPromotions,
+  type CustomerPromotion,
+} from '@/lib/customer/customer-promotions';
 
 import {
   useCustomerSession,
@@ -197,71 +203,135 @@ function FixedHeader({
   );
 }
 
-function Hero() {
+function HeroSlide({
+  promotion,
+  width,
+}: {
+  promotion:
+    | CustomerPromotion
+    | null;
+  width: number;
+}) {
+  const fallback =
+    promotion === null;
+
+  const imageSource =
+    promotion?.imageUrl
+      ? {
+          uri:
+            promotion.imageUrl,
+        }
+      : require(
+          '../../../assets/brand/volte-mobile-home-hero.png',
+        );
+
+  const eyebrow =
+    promotion?.eyebrow ||
+    'POWERING EVERY CONNECTION!';
+
+  const description =
+    promotion?.description ||
+    'Discover devices, accessories and services from VoLTE Mobile.';
+
+  const ctaLabel =
+    promotion
+      ? promotion.ctaLabel
+      : 'Shop VoLTE Mobile';
+
+  const ctaUrl =
+    promotion
+      ? promotion.ctaUrl
+      : SHOP_URL;
+
   return (
-    <View
-      style={
-        styles.heroZone
+    <ImageBackground
+      source={
+        imageSource
+      }
+      resizeMode="cover"
+      imageStyle={
+        styles.heroImage
+      }
+      style={[
+        styles.heroCard,
+        {
+          width,
+        },
+      ]}
+      accessibilityLabel={
+        promotion
+          ? `${promotion.headline} promotion`
+          : 'VoLTE Mobile'
       }
     >
-      <ImageBackground
-        source={require(
-          '../../../assets/brand/volte-mobile-home-hero.png'
-        )}
-        resizeMode="cover"
-        imageStyle={
-          styles.heroImage
-        }
+      <View
+        style={[
+          styles.heroShade,
+          !fallback && {
+            backgroundColor:
+              'rgba(4, 4, 8, 0.28)',
+          },
+        ]}
+      />
+
+      <View
         style={
-          styles.heroCard
+          styles.heroContent
         }
       >
-        <View
+        <Text
+          numberOfLines={1}
           style={
-            styles.heroShade
-          }
-        />
-
-        <View
-          style={
-            styles.heroContent
+            styles.heroEyebrow
           }
         >
-          <Text
-            style={
-              styles.heroEyebrow
-            }
-          >
-            POWERING EVERY CONNECTION!
-          </Text>
+          {eyebrow}
+        </Text>
 
-          <Text
-            style={
-              styles.heroTitle
-            }
-          >
-            Explore{'\n'}
-            what's next.
-          </Text>
+        <Text
+          numberOfLines={
+            promotion
+              ? 3
+              : undefined
+          }
+          style={
+            styles.heroTitle
+          }
+        >
+          {promotion
+            ? promotion.headline
+            : (
+                <>
+                  Explore{'\n'}
+                  what's next.
+                </>
+              )}
+        </Text>
 
-          <Text
-            style={
-              styles.heroBody
-            }
-          >
-            Discover devices,
-            accessories and services
-            from VoLTE Mobile.
-          </Text>
+        <Text
+          numberOfLines={3}
+          style={
+            styles.heroBody
+          }
+        >
+          {description}
+        </Text>
 
+        {ctaLabel &&
+        ctaUrl ? (
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={
+              ctaLabel
+            }
             onPress={() => {
               void Linking
                 .openURL(
-                  SHOP_URL,
+                  ctaUrl,
                 )
-                .catch(() => {});
+                .catch(
+                  () => {},
+                );
             }}
             style={({
               pressed,
@@ -272,11 +342,12 @@ function Hero() {
             ]}
           >
             <Text
+              numberOfLines={1}
               style={
                 styles.heroButtonText
               }
             >
-              Shop VoLTE Mobile
+              {ctaLabel}
             </Text>
 
             <Text
@@ -287,33 +358,195 @@ function Hero() {
               ›
             </Text>
           </Pressable>
-        </View>
-      </ImageBackground>
-
-      <View
-        style={
-          styles.carouselDots
-        }
-      >
-        <View
-          style={[
-            styles.carouselDot,
-            styles.carouselDotActive,
-          ]}
-        />
-
-        <View
-          style={
-            styles.carouselDot
-          }
-        />
-
-        <View
-          style={
-            styles.carouselDot
-          }
-        />
+        ) : null}
       </View>
+    </ImageBackground>
+  );
+}
+
+function Hero() {
+  const {
+    width:
+      windowWidth,
+  } =
+    useWindowDimensions();
+
+  const slideWidth =
+    Math.max(
+      windowWidth - 32,
+      280,
+    );
+
+  const [
+    promotions,
+    setPromotions,
+  ] =
+    useState<
+      CustomerPromotion[]
+    >([]);
+
+  const [
+    activeIndex,
+    setActiveIndex,
+  ] =
+    useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPromotions() {
+      try {
+        const result =
+          await getCustomerPromotions();
+
+        if (!active) {
+          return;
+        }
+
+        setPromotions(
+          result,
+        );
+
+        setActiveIndex(
+          0,
+        );
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setPromotions(
+          [],
+        );
+
+        setActiveIndex(
+          0,
+        );
+      }
+    }
+
+    void loadPromotions();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const hasPromotions =
+    promotions.length >
+    0;
+
+  return (
+    <View
+      style={
+        styles.heroZone
+      }
+    >
+      <ScrollView
+        horizontal
+        pagingEnabled
+        bounces={
+          promotions.length >
+          1
+        }
+        scrollEnabled={
+          promotions.length >
+          1
+        }
+        showsHorizontalScrollIndicator={
+          false
+        }
+        style={
+          styles.heroCarousel
+        }
+        onMomentumScrollEnd={(
+          event,
+        ) => {
+          if (
+            promotions.length <=
+            1
+          ) {
+            return;
+          }
+
+          const nextIndex =
+            Math.round(
+              event
+                .nativeEvent
+                .contentOffset
+                .x /
+                slideWidth,
+            );
+
+          setActiveIndex(
+            Math.max(
+              0,
+              Math.min(
+                nextIndex,
+                promotions.length -
+                  1,
+              ),
+            ),
+          );
+        }}
+      >
+        {hasPromotions
+          ? promotions.map(
+              (
+                promotion,
+              ) => (
+                <HeroSlide
+                  key={
+                    promotion.id
+                  }
+                  promotion={
+                    promotion
+                  }
+                  width={
+                    slideWidth
+                  }
+                />
+              ),
+            )
+          : (
+              <HeroSlide
+                promotion={
+                  null
+                }
+                width={
+                  slideWidth
+                }
+              />
+            )}
+      </ScrollView>
+
+      {promotions.length >
+      1 ? (
+        <View
+          style={
+            styles.carouselDots
+          }
+        >
+          {promotions.map(
+            (
+              promotion,
+              index,
+            ) => (
+              <View
+                key={
+                  promotion.id
+                }
+                style={[
+                  styles.carouselDot,
+                  index ===
+                    activeIndex &&
+                    styles.carouselDotActive,
+                ]}
+              />
+            ),
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -911,8 +1144,12 @@ const styles =
         BLACK,
     },
 
+    heroCarousel: {
+      height: 272,
+    },
+
     heroCard: {
-      minHeight: 272,
+      height: 272,
       borderRadius: 22,
       overflow:
         'hidden',
