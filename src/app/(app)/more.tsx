@@ -190,7 +190,11 @@ export default function MoreScreen() {
             <MenuRow
               title="Your Offers"
               description="Personalized offers from VoLTE Mobile."
-              disabled
+              onPress={() =>
+                router.navigate(
+                  '/offers',
+                )
+              }
             />
 
             <MenuRow

@@ -176,15 +176,15 @@ export default function CustomerAppLayout() {
       />
 
       <Tabs.Screen
-        name="support"
+        name="offers"
         options={{
-          title: 'Support',
+          title: 'Offers',
 
           tabBarIcon: ({
             color,
           }) => (
             <TabGlyph
-              glyph="?"
+              glyph="✦"
               color={color}
             />
           ),
@@ -204,6 +204,20 @@ export default function CustomerAppLayout() {
               color={color}
             />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="support"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null,
         }}
       />
 
