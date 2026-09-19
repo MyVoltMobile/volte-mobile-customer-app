@@ -180,7 +180,11 @@ export default function MoreScreen() {
             <MenuRow
               title="Order history"
               description="View purchases and order activity."
-              disabled
+              onPress={() =>
+                router.navigate(
+                  '/order-history',
+                )
+              }
             />
 
             <MenuRow
@@ -403,7 +407,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
       letterSpacing: 0.8,
     },
 

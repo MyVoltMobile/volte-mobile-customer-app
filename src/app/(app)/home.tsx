@@ -827,7 +827,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
       letterSpacing: 0.9,
     },
 
@@ -843,7 +843,7 @@ const styles =
         Typography.lineHeight
           .titleSmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     sectionLink: {
@@ -856,7 +856,7 @@ const styles =
         Typography.lineHeight
           .bodySmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     serviceGrid: {
@@ -900,7 +900,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
       letterSpacing: 0.7,
     },
 
@@ -913,7 +913,7 @@ const styles =
         Typography.lineHeight
           .body,
       fontWeight:
-        '800',
+        '700',
     },
 
     tileDescription: {
@@ -938,7 +938,7 @@ const styles =
         Typography.lineHeight
           .bodySmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     activityCard: {
@@ -981,7 +981,7 @@ const styles =
         Typography.lineHeight
           .body,
       fontWeight:
-        '800',
+        '700',
     },
 
     bodyText: {
@@ -1005,7 +1005,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
     },
 
     orderStatus: {
@@ -1018,7 +1018,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
     },
 
     activityBottom: {
@@ -1043,7 +1043,7 @@ const styles =
       fontSize: 20,
       lineHeight: 26,
       fontWeight:
-        '800',
+        '700',
     },
 
     activityHint: {
@@ -1097,7 +1097,7 @@ const styles =
         Typography.lineHeight
           .body,
       fontWeight:
-        '800',
+        '700',
     },
 
     utilityDescription: {
@@ -1122,7 +1122,7 @@ const styles =
         Typography.lineHeight
           .bodySmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     shopCard: {
@@ -1147,7 +1147,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
       letterSpacing: 0.8,
     },
 
@@ -1157,7 +1157,7 @@ const styles =
       fontSize: 24,
       lineHeight: 30,
       fontWeight:
-        '800',
+        '700',
     },
 
     shopDescription: {
@@ -1199,6 +1199,6 @@ const styles =
         Typography.lineHeight
           .body,
       fontWeight:
-        '800',
+        '700',
     },
   });

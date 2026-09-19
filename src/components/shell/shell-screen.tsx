@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     fontSize: Typography.size.title,
     lineHeight: Typography.lineHeight.title,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 
   description: {

@@ -169,7 +169,7 @@ const styles =
         Typography.lineHeight
           .caption,
       fontWeight:
-        '800',
+        '700',
       letterSpacing: 0.8,
     },
 
@@ -183,7 +183,7 @@ const styles =
         Typography.lineHeight
           .titleSmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     serviceDescription: {
@@ -209,6 +209,6 @@ const styles =
         Typography.lineHeight
           .bodySmall,
       fontWeight:
-        '800',
+        '700',
     },
   });

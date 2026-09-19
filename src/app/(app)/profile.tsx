@@ -236,7 +236,7 @@ const styles =
       lineHeight:
         Typography.lineHeight
           .caption,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.8,
     },
 

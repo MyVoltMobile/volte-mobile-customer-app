@@ -7,7 +7,7 @@ export const Colors = {
   },
 
   background: {
-    app: '#F4F5FB',
+    app: '#EFF1F6',
     surface: '#FFFFFF',
     subtle: '#F8F9FC',
   },
@@ -19,7 +19,7 @@ export const Colors = {
   },
 
   border: {
-    default: '#E3E5EE',
+    default: '#DDE0E8',
     strong: '#D4D7E2',
   },
 

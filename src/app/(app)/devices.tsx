@@ -624,7 +624,7 @@ const styles =
         Typography.lineHeight
           .titleSmall,
       fontWeight:
-        '800',
+        '700',
     },
 
     deviceModel: {

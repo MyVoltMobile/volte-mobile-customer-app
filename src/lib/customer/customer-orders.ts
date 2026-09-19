@@ -3,6 +3,7 @@ import {
 } from '@/lib/customer/customer-api';
 
 export type CustomerOrderItem = {
+  id: string;
   name: string;
   quantity: number;
   unitPrice: number;
@@ -61,14 +62,21 @@ function normalizeItem(
     return null;
   }
 
+  const id =
+    nullableString(value.id);
+
   const name =
     nullableString(value.name);
 
-  if (!name) {
+  if (
+    !id ||
+    !name
+  ) {
     return null;
   }
 
   return {
+    id,
     name,
     quantity:
       numericValue(

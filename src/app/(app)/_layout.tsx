@@ -35,7 +35,7 @@ function TabGlyph({
         color,
         fontSize: 18,
         lineHeight: 22,
-        fontWeight: '800',
+        fontWeight: '700',
       }}
     >
       {glyph}
@@ -223,6 +223,13 @@ export default function CustomerAppLayout() {
 
       <Tabs.Screen
         name="iptv"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="order-history"
         options={{
           href: null,
         }}
