@@ -18,10 +18,6 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
-import {
-  Colors,
-} from '@/theme/tokens';
-
 function TabGlyph({
   glyph,
   color,
@@ -33,9 +29,9 @@ function TabGlyph({
     <Text
       style={{
         color,
-        fontSize: 16,
-        lineHeight: 20,
-        fontWeight: '700',
+        fontSize: 18,
+        lineHeight: 21,
+        fontWeight: '600',
       }}
     >
       {glyph}
@@ -46,7 +42,8 @@ function TabGlyph({
 export default function CustomerAppLayout() {
   const {
     status,
-  } = useCustomerSession();
+  } =
+    useCustomerSession();
 
   const insets =
     useSafeAreaInsets();
@@ -54,19 +51,22 @@ export default function CustomerAppLayout() {
   const bottomInset =
     Math.max(
       insets.bottom,
-      18,
+      14,
     );
 
-  if (status === 'loading') {
+  if (
+    status === 'loading'
+  ) {
     return (
       <View
         style={{
           flex: 1,
-          alignItems: 'center',
+          alignItems:
+            'center',
           justifyContent:
             'center',
           backgroundColor:
-            Colors.background.app,
+            '#F3F5F8',
         }}
       >
         <ActivityIndicator
@@ -77,10 +77,13 @@ export default function CustomerAppLayout() {
   }
 
   if (
-    status !== 'authenticated'
+    status !==
+    'authenticated'
   ) {
     return (
-      <Redirect href="/" />
+      <Redirect
+        href="/"
+      />
     );
   }
 
@@ -91,33 +94,59 @@ export default function CustomerAppLayout() {
         headerShown: false,
 
         tabBarActiveTintColor:
-          Colors.brand.secondary,
+          '#C51B74',
 
         tabBarInactiveTintColor:
-          Colors.text.secondary,
+          '#697284',
 
         tabBarHideOnKeyboard:
           true,
 
         tabBarStyle: {
-          height: 58 + bottomInset,
-          minHeight: 58 + bottomInset,
-          paddingTop: 6,
+          height:
+            60 +
+            bottomInset,
+
+          minHeight:
+            60 +
+            bottomInset,
+
+          paddingTop: 7,
+
           paddingBottom:
             bottomInset,
+
           backgroundColor:
-            Colors.background
-              .surface,
-          borderTopColor:
-            Colors.border.default,
+            '#FFFFFF',
+
+          borderTopWidth: 0,
+
+          borderTopLeftRadius: 22,
+
+          borderTopRightRadius: 22,
+
+          shadowColor:
+            '#000000',
+
+          shadowOffset: {
+            width: 0,
+            height: -5,
+          },
+
+          shadowOpacity: 0.05,
+
+          shadowRadius: 14,
+
+          elevation: 8,
         },
 
         tabBarItemStyle: {
-          paddingTop: 2,
+          paddingTop: 1,
         },
 
         tabBarLabelStyle: {
           fontSize: 10,
+          lineHeight: 13,
           fontWeight: '600',
           marginBottom: 0,
         },
@@ -133,7 +162,9 @@ export default function CustomerAppLayout() {
           }) => (
             <TabGlyph
               glyph="⌂"
-              color={color}
+              color={
+                color
+              }
             />
           ),
         }}
@@ -142,14 +173,17 @@ export default function CustomerAppLayout() {
       <Tabs.Screen
         name="services"
         options={{
-          title: 'Services',
+          title:
+            'Services',
 
           tabBarIcon: ({
             color,
           }) => (
             <TabGlyph
-              glyph="◫"
-              color={color}
+              glyph="▦"
+              color={
+                color
+              }
             />
           ),
         }}
@@ -158,14 +192,17 @@ export default function CustomerAppLayout() {
       <Tabs.Screen
         name="finance"
         options={{
-          title: 'Finance',
+          title:
+            'Finance',
 
           tabBarIcon: ({
             color,
           }) => (
             <TabGlyph
               glyph="$"
-              color={color}
+              color={
+                color
+              }
             />
           ),
         }}
@@ -174,14 +211,17 @@ export default function CustomerAppLayout() {
       <Tabs.Screen
         name="offers"
         options={{
-          title: 'Offers',
+          title:
+            'Offers',
 
           tabBarIcon: ({
             color,
           }) => (
             <TabGlyph
               glyph="✦"
-              color={color}
+              color={
+                color
+              }
             />
           ),
         }}
@@ -190,14 +230,17 @@ export default function CustomerAppLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'More',
+          title:
+            'More',
 
           tabBarIcon: ({
             color,
           }) => (
             <TabGlyph
               glyph="☰"
-              color={color}
+              color={
+                color
+              }
             />
           ),
         }}

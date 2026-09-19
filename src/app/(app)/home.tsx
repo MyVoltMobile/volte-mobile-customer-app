@@ -11,6 +11,7 @@ import {
 import {
   ActivityIndicator,
   Image,
+  ImageBackground,
   Linking,
   Pressable,
   ScrollView,
@@ -24,10 +25,6 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
-  Card,
-} from '@/components/ui/card';
-
-import {
   getCustomerOrders,
   type CustomerOrder,
 } from '@/lib/customer/customer-orders';
@@ -36,18 +33,32 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
-import {
-  Colors,
-  Radius,
-  Spacing,
-  Typography,
-} from '@/theme/tokens';
-
 const SHOP_URL =
   'https://voltemobile.com/shop';
 
-const HEADER_BLACK =
+const BLACK =
   '#05070C';
+
+const APP_BG =
+  '#F3F5F8';
+
+const SURFACE =
+  '#FFFFFF';
+
+const INK =
+  '#11131A';
+
+const MUTED =
+  '#687084';
+
+const BORDER =
+  '#E0E4EB';
+
+const MAGENTA =
+  '#C51B74';
+
+const PURPLE =
+  '#5735C5';
 
 function getFirstName(
   value: string | null,
@@ -141,7 +152,7 @@ function FixedHeader({
     >
       <View
         style={
-          styles.header
+          styles.headerRow
         }
       >
         <Image
@@ -151,23 +162,23 @@ function FixedHeader({
           resizeMode="contain"
           accessibilityLabel="VoLTE Mobile"
           style={
-            styles.logo
+            styles.brandIcon
           }
         />
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Search VoLTE Mobile"
-          hitSlop={8}
           onPress={
             onSearch
           }
+          hitSlop={8}
           style={({
             pressed,
           }) => [
             styles.searchButton,
             pressed &&
-              styles.searchPressed,
+              styles.pressed,
           ]}
         >
           <SearchIcon />
@@ -175,10 +186,10 @@ function FixedHeader({
       </View>
 
       <Text
-        style={
-          styles.fixedGreeting
-        }
         numberOfLines={1}
+        style={
+          styles.greeting
+        }
       >
         Hi, {name}
       </Text>
@@ -186,7 +197,150 @@ function FixedHeader({
   );
 }
 
-function RecentOrder({
+function Hero() {
+  return (
+    <View
+      style={
+        styles.heroZone
+      }
+    >
+      <ImageBackground
+        source={require(
+          '../../../assets/brand/volte-mobile-home-hero.png'
+        )}
+        resizeMode="cover"
+        imageStyle={
+          styles.heroImage
+        }
+        style={
+          styles.heroCard
+        }
+      >
+        <View
+          style={
+            styles.heroShade
+          }
+        />
+
+        <View
+          style={
+            styles.heroContent
+          }
+        >
+          <Text
+            style={
+              styles.heroEyebrow
+            }
+          >
+            POWERING EVERY CONNECTION!
+          </Text>
+
+          <Text
+            style={
+              styles.heroTitle
+            }
+          >
+            Explore{'\n'}
+            what's next.
+          </Text>
+
+          <Text
+            style={
+              styles.heroBody
+            }
+          >
+            Discover devices,
+            accessories and services
+            from VoLTE Mobile.
+          </Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Linking
+                .openURL(
+                  SHOP_URL,
+                )
+                .catch(() => {});
+            }}
+            style={({
+              pressed,
+            }) => [
+              styles.heroButton,
+              pressed &&
+                styles.pressed,
+            ]}
+          >
+            <Text
+              style={
+                styles.heroButtonText
+              }
+            >
+              Shop VoLTE Mobile
+            </Text>
+
+            <Text
+              style={
+                styles.heroButtonArrow
+              }
+            >
+              ›
+            </Text>
+          </Pressable>
+        </View>
+      </ImageBackground>
+
+      <View
+        style={
+          styles.carouselDots
+        }
+      >
+        <View
+          style={[
+            styles.carouselDot,
+            styles.carouselDotActive,
+          ]}
+        />
+
+        <View
+          style={
+            styles.carouselDot
+          }
+        />
+
+        <View
+          style={
+            styles.carouselDot
+          }
+        />
+      </View>
+    </View>
+  );
+}
+
+function BagIcon() {
+  return (
+    <View
+      style={
+        styles.activityIconBubble
+      }
+    >
+      <View
+        style={
+          styles.bag
+        }
+      >
+        <View
+          style={
+            styles.bagHandle
+          }
+        />
+      </View>
+    </View>
+  );
+}
+
+function RecentActivity({
   orders,
   loading,
   failed,
@@ -222,7 +376,7 @@ function RecentOrder({
         >
           <Text
             style={
-              styles.sectionLabel
+              styles.sectionEyebrow
             }
           >
             RECENT ACTIVITY
@@ -239,22 +393,33 @@ function RecentOrder({
 
         <Pressable
           accessibilityRole="button"
-          hitSlop={8}
           onPress={
             onViewAll
+          }
+          hitSlop={8}
+          style={({
+            pressed,
+          }) =>
+            pressed
+              ? styles.pressed
+              : undefined
           }
         >
           <Text
             style={
-              styles.sectionAction
+              styles.viewAll
             }
           >
-            View all
+            View all ›
           </Text>
         </Pressable>
       </View>
 
-      <Card>
+      <View
+        style={
+          styles.activityCard
+        }
+      >
         {loading ? (
           <View
             style={
@@ -274,124 +439,229 @@ function RecentOrder({
             </Text>
           </View>
         ) : failed ? (
+          <>
+            <BagIcon />
+
+            <View
+              style={
+                styles.activityCopy
+              }
+            >
+              <Text
+                style={
+                  styles.cardTitle
+                }
+              >
+                Recent activity unavailable
+              </Text>
+
+              <Text
+                style={
+                  styles.bodyText
+                }
+              >
+                Please try again shortly.
+              </Text>
+            </View>
+          </>
+        ) : order ? (
+          <>
+            <BagIcon />
+
+            <View
+              style={
+                styles.activityCopy
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  styles.cardTitle
+                }
+              >
+                {
+                  item?.name ||
+                  'VoLTE Mobile order'
+                }
+              </Text>
+
+              <Text
+                style={
+                  styles.bodyText
+                }
+              >
+                {[
+                  order.receiptNumber,
+                  formatDate(
+                    order.createdAt,
+                  ),
+                ]
+                  .filter(Boolean)
+                  .join(' • ')}
+              </Text>
+
+              <View
+                style={
+                  styles.orderMeta
+                }
+              >
+                <Text
+                  style={
+                    styles.orderAmount
+                  }
+                >
+                  {
+                    formatMoney(
+                      order.total,
+                    )
+                  }
+                </Text>
+
+                <Text
+                  style={
+                    order.paid
+                      ? styles.paidStatus
+                      : styles.orderStatus
+                  }
+                >
+                  {
+                    order.paid
+                      ? 'Paid'
+                      : order.orderStatus ||
+                        'Recorded'
+                  }
+                </Text>
+              </View>
+            </View>
+          </>
+        ) : (
+          <>
+            <BagIcon />
+
+            <View
+              style={
+                styles.activityCopy
+              }
+            >
+              <Text
+                style={
+                  styles.cardTitle
+                }
+              >
+                No online orders yet
+              </Text>
+
+              <Text
+                style={
+                  styles.bodyText
+                }
+              >
+                Your latest online
+                purchases will appear here.
+              </Text>
+            </View>
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function OffersPreview({
+  onPress,
+}: {
+  onPress: () => void;
+}) {
+  return (
+    <View
+      style={
+        styles.section
+      }
+    >
+      <Text
+        style={
+          styles.sectionEyebrow
+        }
+      >
+        YOUR OFFERS
+      </Text>
+
+      <Pressable
+        accessibilityRole="button"
+        onPress={
+          onPress
+        }
+        style={({
+          pressed,
+        }) => [
+          styles.offerCard,
+          pressed &&
+            styles.pressed,
+        ]}
+      >
+        <View
+          style={
+            styles.offerGlowOne
+          }
+        />
+
+        <View
+          style={
+            styles.offerGlowTwo
+          }
+        />
+
+        <View
+          style={
+            styles.offerIconBubble
+          }
+        >
+          <Text
+            style={
+              styles.offerIcon
+            }
+          >
+            ◇
+          </Text>
+        </View>
+
+        <View
+          style={
+            styles.offerCopy
+          }
+        >
+          <Text
+            style={
+              styles.cardTitle
+            }
+          >
+            Something for you.
+          </Text>
+
           <Text
             style={
               styles.bodyText
             }
           >
-            Your recent online order is
-            temporarily unavailable.
+            Personalized VoLTE Mobile
+            offers will appear here.
           </Text>
-        ) : order ? (
-          <View
+        </View>
+
+        <View
+          style={
+            styles.offerArrowBubble
+          }
+        >
+          <Text
             style={
-              styles.orderContent
+              styles.offerArrow
             }
           >
-            <View
-              style={
-                styles.orderTop
-              }
-            >
-              <View
-                style={
-                  styles.orderHeading
-                }
-              >
-                <Text
-                  style={
-                    styles.orderTitle
-                  }
-                >
-                  {
-                    item?.name ||
-                    'VoLTE Mobile order'
-                  }
-                </Text>
-
-                <Text
-                  style={
-                    styles.bodyText
-                  }
-                >
-                  {[
-                    order.receiptNumber,
-                    formatDate(
-                      order.createdAt,
-                    ),
-                  ]
-                    .filter(Boolean)
-                    .join(' • ')}
-                </Text>
-              </View>
-
-              <Text
-                style={
-                  order.paid
-                    ? styles.paidStatus
-                    : styles.orderStatus
-                }
-              >
-                {
-                  order.paid
-                    ? 'Paid'
-                    : order.orderStatus ||
-                      'Recorded'
-                }
-              </Text>
-            </View>
-
-            <View
-              style={
-                styles.orderBottom
-              }
-            >
-              <Text
-                style={
-                  styles.orderAmount
-                }
-              >
-                {
-                  formatMoney(
-                    order.total,
-                  )
-                }
-              </Text>
-
-              <Text
-                style={
-                  styles.orderHint
-                }
-              >
-                Online purchase
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <View
-            style={
-              styles.emptyOrder
-            }
-          >
-            <Text
-              style={
-                styles.orderTitle
-              }
-            >
-              No online orders yet
-            </Text>
-
-            <Text
-              style={
-                styles.bodyText
-              }
-            >
-              Your latest online
-              purchases will appear here.
-            </Text>
-          </View>
-        )}
-      </Card>
+            ›
+          </Text>
+        </View>
+      </Pressable>
     </View>
   );
 }
@@ -495,78 +765,15 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={
           false
         }
-        keyboardShouldPersistTaps="handled"
       >
-        <View
-          style={
-            styles.hero
-          }
-        >
-          <View
-            style={
-              styles.shopCard
-            }
-          >
-            <Text
-              style={
-                styles.shopEyebrow
-              }
-            >
-              POWERING EVERY CONNECTION!
-            </Text>
-
-            <Text
-              style={
-                styles.shopTitle
-              }
-            >
-              Explore what's next.
-            </Text>
-
-            <Text
-              style={
-                styles.shopDescription
-              }
-            >
-              Discover devices,
-              accessories and services
-              from VoLTE Mobile.
-            </Text>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
-                void Linking
-                  .openURL(
-                    SHOP_URL,
-                  )
-                  .catch(() => {});
-              }}
-              style={({
-                pressed,
-              }) => [
-                styles.shopButton,
-                pressed &&
-                  styles.shopPressed,
-              ]}
-            >
-              <Text
-                style={
-                  styles.shopButtonText
-                }
-              >
-                Shop VoLTE Mobile
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <Hero />
 
         <View
           style={
             styles.content
           }
         >
-          <RecentOrder
+          <RecentActivity
             orders={orders}
             loading={loading}
             failed={failed}
@@ -577,60 +784,13 @@ export default function HomeScreen() {
             }
           />
 
-          <Pressable
-            accessibilityRole="button"
+          <OffersPreview
             onPress={() =>
               router.navigate(
                 '/offers',
               )
             }
-            style={({
-              pressed,
-            }) => [
-              styles.offerCard,
-              pressed &&
-                styles.offerPressed,
-            ]}
-          >
-            <View
-              style={
-                styles.offerText
-              }
-            >
-              <Text
-                style={
-                  styles.offerEyebrow
-                }
-              >
-                YOUR OFFERS
-              </Text>
-
-              <Text
-                style={
-                  styles.offerTitle
-                }
-              >
-                Something for you.
-              </Text>
-
-              <Text
-                style={
-                  styles.offerDescription
-                }
-              >
-                Personalized VoLTE Mobile
-                offers will appear here.
-              </Text>
-            </View>
-
-            <Text
-              style={
-                styles.offerArrow
-              }
-            >
-              ›
-            </Text>
-          </Pressable>
+          />
         </View>
       </ScrollView>
     </View>
@@ -642,20 +802,18 @@ const styles =
     screen: {
       flex: 1,
       backgroundColor:
-        Colors.background.app,
+        APP_BG,
     },
 
     headerSafe: {
       backgroundColor:
-        HEADER_BLACK,
-      paddingBottom: 12,
+        BLACK,
+      paddingBottom: 14,
     },
 
-    header: {
-      minHeight: 54,
+    headerRow: {
+      minHeight: 48,
       paddingHorizontal: 20,
-      backgroundColor:
-        HEADER_BLACK,
       flexDirection:
         'row',
       alignItems:
@@ -664,33 +822,29 @@ const styles =
         'space-between',
     },
 
-    logo: {
-      width: 34,
-      height: 38,
+    brandIcon: {
+      width: 27,
+      height: 31,
     },
 
     searchButton: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        Colors.background.surface,
+        '#272A31',
       borderWidth: 1,
       borderColor:
-        '#252A33',
-    },
-
-    searchPressed: {
-      opacity: 0.82,
+        '#363A43',
     },
 
     searchIcon: {
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       position:
         'relative',
     },
@@ -698,137 +852,190 @@ const styles =
     searchLens: {
       position:
         'absolute',
-      left: 2,
+      left: 1,
       top: 1,
-      width: 15,
-      height: 15,
-      borderRadius: 8,
-      borderWidth: 2.2,
+      width: 13,
+      height: 13,
+      borderRadius: 7,
+      borderWidth: 2,
       borderColor:
-        HEADER_BLACK,
+        '#FFFFFF',
     },
 
     searchHandle: {
       position:
         'absolute',
-      right: 1,
-      bottom: 4,
-      width: 9,
-      height: 2.2,
-      borderRadius: 2,
+      right: 0,
+      bottom: 3,
+      width: 8,
+      height: 2,
+      borderRadius: 1,
       backgroundColor:
-        HEADER_BLACK,
+        '#FFFFFF',
       transform: [
         {
-          rotate: '45deg',
+          rotate:
+            '45deg',
         },
       ],
     },
 
-    scroll: {
-      flex: 1,
-      backgroundColor:
-        Colors.background.app,
-    },
-
-    scrollContent: {
-      paddingBottom:
-        Spacing.xxxl,
-    },
-
-    hero: {
-      width: '100%',
+    greeting: {
       paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 18,
-      gap: 0,
-      backgroundColor:
-        HEADER_BLACK,
-    },
-
-    fixedGreeting: {
-      paddingHorizontal: 20,
-      paddingTop: 2,
+      paddingTop: 7,
       color:
-        Colors.text.inverse,
-      fontSize: 27,
-      lineHeight: 32,
+        '#FFFFFF',
+      fontSize: 24,
+      lineHeight: 29,
       fontWeight:
         '700',
       letterSpacing:
         -0.5,
     },
 
-    shopCard: {
-      width: '100%',
-      padding: 20,
-      gap: 12,
-      borderRadius: 20,
+    scroll: {
+      flex: 1,
       backgroundColor:
-        Colors.brand.secondary,
+        APP_BG,
     },
 
-    shopEyebrow: {
+    scrollContent: {
+      paddingBottom: 34,
+    },
+
+    heroZone: {
+      paddingHorizontal: 16,
+      paddingTop: 10,
+      paddingBottom: 14,
+      backgroundColor:
+        BLACK,
+    },
+
+    heroCard: {
+      minHeight: 272,
+      borderRadius: 22,
+      overflow:
+        'hidden',
+      justifyContent:
+        'center',
+    },
+
+    heroImage: {
+      borderRadius: 22,
+    },
+
+    heroShade: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor:
+        'rgba(4, 4, 8, 0.08)',
+    },
+
+    heroContent: {
+      width: '64%',
+      paddingLeft: 20,
+      paddingVertical: 22,
+      gap: 12,
+    },
+
+    heroEyebrow: {
       color:
-        Colors.text.inverse,
-      fontSize: 11,
+        '#F6EEF4',
+      fontSize: 10,
+      lineHeight: 14,
       fontWeight:
         '700',
-      letterSpacing: 1,
+      letterSpacing: 1.5,
     },
 
-    shopTitle: {
+    heroTitle: {
       color:
-        Colors.text.inverse,
-      fontSize: 25,
-      lineHeight: 30,
+        '#FFFFFF',
+      fontSize: 30,
+      lineHeight: 34,
       fontWeight:
         '700',
+      letterSpacing:
+        -0.8,
     },
 
-    shopDescription: {
+    heroBody: {
       color:
-        '#FBE7F1',
-      fontSize: 15,
-      lineHeight: 22,
+        '#E4DCE3',
+      fontSize: 14,
+      lineHeight: 20,
     },
 
-    shopButton: {
-      minHeight: 48,
-      marginTop:
-        Spacing.xs,
-      paddingHorizontal:
-        Spacing.lg,
-      borderRadius:
-        Radius.md,
+    heroButton: {
+      minHeight: 46,
+      marginTop: 4,
+      paddingHorizontal: 16,
+      borderRadius: 24,
+      flexDirection:
+        'row',
       alignItems:
         'center',
       justifyContent:
         'center',
+      gap: 8,
       backgroundColor:
-        Colors.background.surface,
+        '#FFFFFF',
     },
 
-    shopPressed: {
-      opacity: 0.86,
-    },
-
-    shopButtonText: {
+    heroButtonText: {
       color:
-        Colors.brand.secondary,
-      fontSize: 15,
+        MAGENTA,
+      fontSize: 14,
       fontWeight:
         '700',
     },
 
+    heroButtonArrow: {
+      color:
+        MAGENTA,
+      fontSize: 23,
+      lineHeight: 23,
+      fontWeight:
+        '500',
+    },
+
+    carouselDots: {
+      height: 20,
+      paddingTop: 10,
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      gap: 8,
+    },
+
+    carouselDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor:
+        '#3B404A',
+    },
+
+    carouselDotActive: {
+      width: 18,
+      backgroundColor:
+        MAGENTA,
+    },
+
     content: {
-      paddingHorizontal: 20,
-      paddingTop: 20,
-      gap: 20,
+      paddingHorizontal: 16,
+      paddingTop: 26,
+      gap: 28,
     },
 
     section: {
-      gap: 10,
+      gap: 11,
     },
 
     sectionHeader: {
@@ -838,40 +1045,128 @@ const styles =
         'flex-end',
       justifyContent:
         'space-between',
-      gap:
-        Spacing.md,
+      gap: 12,
     },
 
     sectionHeading: {
       flex: 1,
-      gap:
-        Spacing.xs,
+      gap: 4,
     },
 
-    sectionLabel: {
+    sectionEyebrow: {
       color:
-        Colors.brand.secondary,
+        MAGENTA,
       fontSize: 11,
+      lineHeight: 15,
       fontWeight:
         '700',
-      letterSpacing: 1,
+      letterSpacing: 1.2,
     },
 
     sectionTitle: {
       color:
-        Colors.text.primary,
-      fontSize: 18,
-      lineHeight: 23,
+        INK,
+      fontSize: 20,
+      lineHeight: 25,
+      fontWeight:
+        '700',
+      letterSpacing:
+        -0.3,
+    },
+
+    viewAll: {
+      color:
+        PURPLE,
+      fontSize: 13,
+      lineHeight: 18,
       fontWeight:
         '700',
     },
 
-    sectionAction: {
+    activityCard: {
+      minHeight: 116,
+      padding: 17,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor:
+        BORDER,
+      backgroundColor:
+        SURFACE,
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      gap: 15,
+
+      shadowColor:
+        '#000000',
+      shadowOffset: {
+        width: 0,
+        height: 6,
+      },
+      shadowOpacity: 0.04,
+      shadowRadius: 15,
+      elevation: 1,
+    },
+
+    activityIconBubble: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        '#F0F2F6',
+    },
+
+    bag: {
+      width: 23,
+      height: 24,
+      marginTop: 5,
+      borderWidth: 2,
+      borderRadius: 3,
+      borderColor:
+        '#697284',
+    },
+
+    bagHandle: {
+      position:
+        'absolute',
+      top: -8,
+      left: 5,
+      width: 11,
+      height: 10,
+      borderWidth: 2,
+      borderBottomWidth: 0,
+      borderTopLeftRadius: 6,
+      borderTopRightRadius: 6,
+      borderColor:
+        '#697284',
+    },
+
+    activityCopy: {
+      flex: 1,
+      gap: 5,
+    },
+
+    cardTitle: {
       color:
-        Colors.brand.primary,
-      fontSize: 13,
+        INK,
+      fontSize: 17,
+      lineHeight: 22,
       fontWeight:
         '700',
+      letterSpacing:
+        -0.2,
+    },
+
+    bodyText: {
+      color:
+        MUTED,
+      fontSize: 14,
+      lineHeight: 20,
     },
 
     loadingRow: {
@@ -879,162 +1174,144 @@ const styles =
         'row',
       alignItems:
         'center',
-      gap:
-        Spacing.md,
+      gap: 12,
     },
 
-    orderContent: {
-      gap:
-        Spacing.lg,
-    },
-
-    orderTop: {
-      flexDirection:
-        'row',
-      alignItems:
-        'flex-start',
-      justifyContent:
-        'space-between',
-      gap:
-        Spacing.md,
-    },
-
-    orderHeading: {
-      flex: 1,
-      gap:
-        Spacing.xs,
-    },
-
-    orderTitle: {
-      color:
-        Colors.text.primary,
-      fontSize: 15,
-      fontWeight:
-        '700',
-    },
-
-    bodyText: {
-      color:
-        Colors.text.secondary,
-      fontSize: 14,
-      lineHeight: 20,
-    },
-
-    paidStatus: {
-      color:
-        Colors.status.success,
-      fontSize:
-        Typography.size.caption,
-      fontWeight:
-        '700',
-    },
-
-    orderStatus: {
-      color:
-        Colors.text.secondary,
-      fontSize:
-        Typography.size.caption,
-      fontWeight:
-        '700',
-    },
-
-    orderBottom: {
-      paddingTop:
-        Spacing.md,
-      borderTopWidth: 1,
-      borderTopColor:
-        Colors.border.default,
-      flexDirection:
-        'row',
-      alignItems:
-        'flex-end',
-      justifyContent:
-        'space-between',
-      gap:
-        Spacing.md,
-    },
-
-    orderAmount: {
-      color:
-        Colors.text.primary,
-      fontSize: 18,
-      fontWeight:
-        '700',
-    },
-
-    orderHint: {
-      color:
-        Colors.text.secondary,
-      fontSize:
-        Typography.size.caption,
-    },
-
-    emptyOrder: {
-      gap:
-        Spacing.sm,
-    },
-
-    offerCard: {
-      minHeight: 108,
-      padding: 16,
-      borderWidth: 1,
-      borderColor:
-        Colors.border.default,
-      borderRadius:
-        Radius.lg,
-      backgroundColor:
-        Colors.background.surface,
+    orderMeta: {
+      marginTop: 5,
       flexDirection:
         'row',
       alignItems:
         'center',
       justifyContent:
         'space-between',
-      gap:
-        Spacing.md,
+      gap: 10,
     },
 
-    offerPressed: {
-      backgroundColor:
-        Colors.background.subtle,
-    },
-
-    offerText: {
-      flex: 1,
-      gap:
-        Spacing.xs,
-    },
-
-    offerEyebrow: {
+    orderAmount: {
       color:
-        Colors.brand.secondary,
-      fontSize:
-        Typography.size.caption,
-      fontWeight:
-        '700',
-      letterSpacing: 1,
-    },
-
-    offerTitle: {
-      color:
-        Colors.text.primary,
-      fontSize: 18,
-      fontWeight:
-        '700',
-    },
-
-    offerDescription: {
-      color:
-        Colors.text.secondary,
+        INK,
       fontSize: 14,
-      lineHeight: 20,
+      fontWeight:
+        '700',
+    },
+
+    paidStatus: {
+      color:
+        '#16854B',
+      fontSize: 11,
+      fontWeight:
+        '700',
+    },
+
+    orderStatus: {
+      color:
+        MUTED,
+      fontSize: 11,
+      fontWeight:
+        '700',
+    },
+
+    offerCard: {
+      minHeight: 118,
+      padding: 17,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor:
+        '#E5DFE8',
+      backgroundColor:
+        SURFACE,
+      overflow:
+        'hidden',
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      gap: 15,
+
+      shadowColor:
+        '#000000',
+      shadowOffset: {
+        width: 0,
+        height: 6,
+      },
+      shadowOpacity: 0.04,
+      shadowRadius: 15,
+      elevation: 1,
+    },
+
+    offerGlowOne: {
+      position:
+        'absolute',
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      right: -42,
+      top: -72,
+      backgroundColor:
+        '#F7EAF4',
+    },
+
+    offerGlowTwo: {
+      position:
+        'absolute',
+      width: 130,
+      height: 130,
+      borderRadius: 65,
+      right: 18,
+      bottom: -88,
+      backgroundColor:
+        '#F4ECFF',
+    },
+
+    offerIconBubble: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        '#FBEAF3',
+    },
+
+    offerIcon: {
+      color:
+        MAGENTA,
+      fontSize: 31,
+      lineHeight: 34,
+      fontWeight:
+        '500',
+    },
+
+    offerCopy: {
+      flex: 1,
+      gap: 5,
+    },
+
+    offerArrowBubble: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        'rgba(255,255,255,0.82)',
     },
 
     offerArrow: {
       color:
-        Colors.brand.primary,
-      fontSize: 28,
+        PURPLE,
+      fontSize: 26,
+      lineHeight: 27,
       fontWeight:
-        '400',
+        '500',
+    },
+
+    pressed: {
+      opacity: 0.76,
     },
   });
