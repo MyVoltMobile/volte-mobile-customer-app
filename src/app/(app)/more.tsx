@@ -8,6 +8,7 @@ import {
 
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -32,6 +33,69 @@ import {
   Spacing,
   Typography,
 } from '@/theme/tokens';
+
+const SITE_URL =
+  'https://voltemobile.com';
+
+const CONTACT = {
+  address:
+    '5 Fort George Road, Main Street, Stony Hill, Kingston 9, St. Andrew, Jamaica',
+  phone:
+    '+1 876 310 5423',
+  phoneHref:
+    'tel:+18763105423',
+  email:
+    'support@voltemobile.com',
+  emailHref:
+    'mailto:support@voltemobile.com',
+} as const;
+
+const LEGAL_LINKS = [
+  {
+    label:
+      'Privacy Policy',
+    url:
+      `${SITE_URL}/privacy`,
+  },
+  {
+    label:
+      'Terms of Use',
+    url:
+      `${SITE_URL}/terms`,
+  },
+  {
+    label:
+      'Sales & Returns',
+    url:
+      `${SITE_URL}/sales-returns`,
+  },
+  {
+    label:
+      'Delivery Policy',
+    url:
+      `${SITE_URL}/delivery-policy`,
+  },
+  {
+    label:
+      'Data Protection',
+    url:
+      `${SITE_URL}/privacy#data-protection`,
+  },
+] as const;
+
+function openExternal(
+  url: string,
+) {
+  void Linking
+    .openURL(url)
+    .catch(() => {
+      /*
+       * External-link failure leaves
+       * the customer safely inside
+       * the app.
+       */
+    });
+}
 
 function MenuRow({
   title,
@@ -91,14 +155,136 @@ function MenuRow({
       <Text
         style={
           disabled
-            ? styles.menuTrailingMuted
-            : styles.menuTrailing
+            ? styles
+                .menuTrailingMuted
+            : styles
+                .menuTrailing
         }
       >
         {trailing ||
           (disabled
             ? 'Soon'
             : '›')}
+      </Text>
+    </Pressable>
+  );
+}
+
+function TrustRow({
+  marker,
+  title,
+}: {
+  marker: string;
+  title: string;
+}) {
+  return (
+    <View
+      style={
+        styles.trustRow
+      }
+    >
+      <View
+        style={
+          styles.trustIcon
+        }
+      >
+        <Text
+          style={
+            styles.trustIconText
+          }
+        >
+          {marker}
+        </Text>
+      </View>
+
+      <Text
+        style={
+          styles.trustTitle
+        }
+      >
+        {title}
+      </Text>
+    </View>
+  );
+}
+
+function FooterLink({
+  label,
+  url,
+}: {
+  label: string;
+  url: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="link"
+      onPress={() =>
+        openExternal(url)
+      }
+      style={({
+        pressed,
+      }) => [
+        styles.footerLink,
+        pressed &&
+          styles.footerPressed,
+      ]}
+    >
+      <Text
+        style={
+          styles.footerLinkText
+        }
+      >
+        {label}
+      </Text>
+
+      <Text
+        style={
+          styles.footerChevron
+        }
+      >
+        ›
+      </Text>
+    </Pressable>
+  );
+}
+
+function ContactLink({
+  label,
+  value,
+  url,
+}: {
+  label: string;
+  value: string;
+  url: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="link"
+      onPress={() =>
+        openExternal(url)
+      }
+      style={({
+        pressed,
+      }) => [
+        styles.contactLink,
+        pressed &&
+          styles.footerPressed,
+      ]}
+    >
+      <Text
+        style={
+          styles.contactLabel
+        }
+      >
+        {label}
+      </Text>
+
+      <Text
+        style={
+          styles.contactValue
+        }
+      >
+        {value}
       </Text>
     </Pressable>
   );
@@ -154,7 +340,7 @@ export default function MoreScreen() {
     <ShellScreen
       eyebrow="Account"
       title="More"
-      description="Account tools, preferences and more from VoLTE Mobile."
+      description="Account tools, support and more from VoLTE Mobile."
     >
       <View
         style={
@@ -224,13 +410,21 @@ export default function MoreScreen() {
             <MenuRow
               title="Privacy"
               description="Privacy information and account protection."
-              disabled
+              onPress={() =>
+                openExternal(
+                  `${SITE_URL}/privacy`,
+                )
+              }
             />
 
             <MenuRow
               title="About VoLTE Mobile"
-              description="Learn more about VoLTE Mobile."
-              disabled
+              description="Visit VoLTE Mobile online."
+              onPress={() =>
+                openExternal(
+                  SITE_URL,
+                )
+              }
             />
           </View>
         </Card>
@@ -304,6 +498,221 @@ export default function MoreScreen() {
             )}
           </View>
         </Card>
+
+        <View
+          style={
+            styles.footer
+          }
+        >
+          <View
+            style={
+              styles.footerSection
+            }
+          >
+            <Text
+              style={
+                styles.footerEyebrow
+              }
+            >
+              SECURE & TRUSTED
+            </Text>
+
+            <View
+              style={
+                styles.trustList
+              }
+            >
+              <TrustRow
+                marker="✓"
+                title="Secure SSL"
+              />
+
+              <TrustRow
+                marker="S"
+                title="Secure Checkout"
+              />
+
+              <TrustRow
+                marker="B"
+                title="Scotiabank Business Banking"
+              />
+            </View>
+          </View>
+
+          <View
+            style={
+              styles.footerDivider
+            }
+          />
+
+          <View
+            style={
+              styles.footerSection
+            }
+          >
+            <Text
+              style={
+                styles.footerEyebrow
+              }
+            >
+              CARDS ACCEPTED
+            </Text>
+
+            <View
+              style={
+                styles.cards
+              }
+            >
+              <View
+                style={
+                  styles.cardMark
+                }
+              >
+                <Text
+                  style={
+                    styles.visaText
+                  }
+                >
+                  VISA
+                </Text>
+              </View>
+
+              <View
+                style={
+                  styles.cardMark
+                }
+              >
+                <Text
+                  style={
+                    styles.mastercardText
+                  }
+                >
+                  Mastercard
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={
+              styles.footerDivider
+            }
+          />
+
+          <View
+            style={
+              styles.footerSection
+            }
+          >
+            <Text
+              style={
+                styles.footerEyebrow
+              }
+            >
+              CONTACT
+            </Text>
+
+            <Text
+              style={
+                styles.address
+              }
+            >
+              {CONTACT.address}
+            </Text>
+
+            <ContactLink
+              label="Telephone"
+              value={
+                CONTACT.phone
+              }
+              url={
+                CONTACT.phoneHref
+              }
+            />
+
+            <ContactLink
+              label="Email"
+              value={
+                CONTACT.email
+              }
+              url={
+                CONTACT.emailHref
+              }
+            />
+          </View>
+
+          <View
+            style={
+              styles.footerDivider
+            }
+          />
+
+          <View
+            style={
+              styles.footerSection
+            }
+          >
+            <Text
+              style={
+                styles.footerEyebrow
+              }
+            >
+              LEGAL
+            </Text>
+
+            <View
+              style={
+                styles.legalLinks
+              }
+            >
+              {LEGAL_LINKS.map(
+                (item) => (
+                  <FooterLink
+                    key={
+                      item.label
+                    }
+                    label={
+                      item.label
+                    }
+                    url={
+                      item.url
+                    }
+                  />
+                ),
+              )}
+            </View>
+          </View>
+
+          <View
+            style={
+              styles.footerDivider
+            }
+          />
+
+          <View
+            style={
+              styles.copyright
+            }
+          >
+            <Text
+              style={
+                styles.copyrightText
+              }
+            >
+              © 2026 VoLTE Mobile.
+              {' '}
+              All rights reserved.
+            </Text>
+
+            <Text
+              style={
+                styles.country
+              }
+            >
+              🇯🇲 Jamaica
+            </Text>
+          </View>
+        </View>
       </View>
     </ShellScreen>
   );
@@ -335,8 +744,7 @@ const styles =
         Spacing.md,
       borderBottomWidth: 1,
       borderBottomColor:
-        Colors.border
-          .default,
+        Colors.border.default,
     },
 
     menuRowPressed: {
@@ -355,19 +763,16 @@ const styles =
       fontSize:
         Typography.size.body,
       lineHeight:
-        Typography.lineHeight
-          .body,
+        Typography.lineHeight.body,
       fontWeight:
         '700',
     },
 
     menuDescription: {
       color:
-        Colors.text
-          .secondary,
+        Colors.text.secondary,
       fontSize:
-        Typography.size
-          .bodySmall,
+        Typography.size.bodySmall,
       lineHeight:
         Typography.lineHeight
           .bodySmall,
@@ -384,14 +789,11 @@ const styles =
 
     menuTrailingMuted: {
       color:
-        Colors.text
-          .secondary,
+        Colors.text.secondary,
       fontSize:
-        Typography.size
-          .caption,
+        Typography.size.caption,
       lineHeight:
-        Typography.lineHeight
-          .caption,
+        Typography.lineHeight.caption,
       fontWeight:
         '700',
     },
@@ -405,11 +807,9 @@ const styles =
       color:
         Colors.brand.secondary,
       fontSize:
-        Typography.size
-          .caption,
+        Typography.size.caption,
       lineHeight:
-        Typography.lineHeight
-          .caption,
+        Typography.lineHeight.caption,
       fontWeight:
         '700',
       letterSpacing: 0.8,
@@ -417,11 +817,9 @@ const styles =
 
     helper: {
       color:
-        Colors.text
-          .secondary,
+        Colors.text.secondary,
       fontSize:
-        Typography.size
-          .bodySmall,
+        Typography.size.bodySmall,
       lineHeight:
         Typography.lineHeight
           .bodySmall,
@@ -431,8 +829,7 @@ const styles =
       color:
         Colors.status.danger,
       fontSize:
-        Typography.size
-          .bodySmall,
+        Typography.size.bodySmall,
       lineHeight:
         Typography.lineHeight
           .bodySmall,
@@ -458,21 +855,18 @@ const styles =
         Radius.md,
       borderWidth: 1,
       borderColor:
-        Colors.border
-          .strong,
+        Colors.border.strong,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        Colors.background
-          .surface,
+        Colors.background.surface,
     },
 
     signOutPressed: {
       backgroundColor:
-        Colors.background
-          .subtle,
+        Colors.background.subtle,
     },
 
     signOutText: {
@@ -480,10 +874,236 @@ const styles =
         Colors.text.primary,
       fontSize:
         Typography.size.body,
-      lineHeight:
-        Typography.lineHeight
-          .body,
       fontWeight:
         '700',
+    },
+
+    footer: {
+      overflow:
+        'hidden',
+      borderRadius:
+        Radius.xl,
+      padding:
+        Spacing.xl,
+      gap:
+        Spacing.xl,
+      backgroundColor:
+        '#05070C',
+    },
+
+    footerSection: {
+      gap:
+        Spacing.md,
+    },
+
+    footerEyebrow: {
+      color:
+        '#B7BDCA',
+      fontSize:
+        Typography.size.caption,
+      lineHeight:
+        Typography.lineHeight.caption,
+      fontWeight:
+        '700',
+      letterSpacing: 1.3,
+    },
+
+    trustList: {
+      gap:
+        Spacing.md,
+    },
+
+    trustRow: {
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      gap:
+        Spacing.md,
+    },
+
+    trustIcon: {
+      width: 40,
+      height: 40,
+      borderRadius:
+        Radius.sm,
+      borderWidth: 1,
+      borderColor:
+        '#303541',
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+    },
+
+    trustIconText: {
+      color:
+        '#F5F6F8',
+      fontSize:
+        Typography.size.body,
+      fontWeight:
+        '700',
+    },
+
+    trustTitle: {
+      flex: 1,
+      color:
+        '#D5D8E1',
+      fontSize:
+        Typography.size.bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+      fontWeight:
+        '600',
+    },
+
+    footerDivider: {
+      height: 1,
+      backgroundColor:
+        '#252A33',
+    },
+
+    cards: {
+      flexDirection:
+        'row',
+      flexWrap:
+        'wrap',
+      gap:
+        Spacing.md,
+    },
+
+    cardMark: {
+      minWidth: 112,
+      minHeight: 54,
+      paddingHorizontal:
+        Spacing.lg,
+      borderRadius:
+        Radius.md,
+      backgroundColor:
+        '#FFFFFF',
+      alignItems:
+        'center',
+      justifyContent:
+        'center',
+    },
+
+    visaText: {
+      color:
+        '#1A1F71',
+      fontSize:
+        Typography.size.body,
+      fontWeight:
+        '700',
+      fontStyle:
+        'italic',
+    },
+
+    mastercardText: {
+      color:
+        '#171922',
+      fontSize:
+        Typography.size.bodySmall,
+      fontWeight:
+        '700',
+    },
+
+    address: {
+      color:
+        '#C5CAD5',
+      fontSize:
+        Typography.size.bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+    },
+
+    contactLink: {
+      paddingVertical:
+        Spacing.xs,
+      gap: 2,
+    },
+
+    contactLabel: {
+      color:
+        '#838B9D',
+      fontSize:
+        Typography.size.caption,
+      lineHeight:
+        Typography.lineHeight.caption,
+    },
+
+    contactValue: {
+      color:
+        '#E5E7EC',
+      fontSize:
+        Typography.size.bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+      fontWeight:
+        '600',
+    },
+
+    legalLinks: {
+      gap:
+        Spacing.xs,
+    },
+
+    footerLink: {
+      minHeight: 44,
+      flexDirection:
+        'row',
+      alignItems:
+        'center',
+      justifyContent:
+        'space-between',
+      gap:
+        Spacing.md,
+    },
+
+    footerLinkText: {
+      color:
+        '#C5CAD5',
+      fontSize:
+        Typography.size.bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
+    },
+
+    footerChevron: {
+      color:
+        '#A695F3',
+      fontSize: 22,
+      lineHeight: 24,
+    },
+
+    footerPressed: {
+      opacity: 0.64,
+    },
+
+    copyright: {
+      gap:
+        Spacing.sm,
+    },
+
+    copyrightText: {
+      color:
+        '#8B92A3',
+      fontSize:
+        Typography.size.caption,
+      lineHeight:
+        Typography.lineHeight.caption,
+    },
+
+    country: {
+      color:
+        '#C5CAD5',
+      fontSize:
+        Typography.size.bodySmall,
+      lineHeight:
+        Typography.lineHeight
+          .bodySmall,
     },
   });
