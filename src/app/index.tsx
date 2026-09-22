@@ -2,25 +2,37 @@ import {
   Redirect,
   useRouter,
 } from 'expo-router';
+
+import {
+  StatusBar,
+} from 'expo-status-bar';
+
 import {
   ActivityIndicator,
+  ImageBackground,
+  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BrandLogo } from '@/components/brand/brand-logo';
-import { Button } from '@/components/ui/button';
-import { AppIdentity } from '@/config/app';
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
+
+import {
+  AppIdentity,
+} from '@/config/app';
+
 import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
-import {
-  Colors,
-  Spacing,
-  Typography,
-} from '@/theme/tokens';
+
+const LOGIN_HERO = require(
+  '../../assets/brand/volte-mobile-login-hero.png',
+);
+
+const MAGENTA = '#F5007E';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -28,21 +40,6 @@ export default function WelcomeScreen() {
   const {
     status,
   } = useCustomerSession();
-
-  if (status === 'loading') {
-    return (
-      <SafeAreaView
-        style={styles.screen}
-      >
-        <ActivityIndicator
-          size="small"
-          style={{
-            alignSelf: 'center',
-          }}
-        />
-      </SafeAreaView>
-    );
-  }
 
   if (
     status === 'authenticated'
@@ -53,92 +50,193 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
-        <BrandLogo width={210} />
+    <View style={styles.screen}>
+      <StatusBar style="light" />
 
-        <View style={styles.copy}>
-          <Text style={styles.title}>
-            Your VoLTE Mobile account,
-            all in one place.
-          </Text>
+      <ImageBackground
+        source={LOGIN_HERO}
+        resizeMode="cover"
+        style={styles.background}
+      >
+        <View
+          pointerEvents="none"
+          style={styles.softShade}
+        />
 
-          <Text style={styles.description}>
-            Manage your devices, purchases,
-            finance and support from your
-            secure customer account.
-          </Text>
-        </View>
+        <View
+          pointerEvents="none"
+          style={styles.bottomShade}
+        />
 
-        <View style={styles.actions}>
-          <Button
-            label="Sign in"
-            onPress={() => router.navigate('/login')}
-          />
+        {status === 'loading' ? (
+          <SafeAreaView
+            style={styles.loading}
+          >
+            <ActivityIndicator
+              color="#FFFFFF"
+              size="small"
+            />
+          </SafeAreaView>
+        ) : (
+          <SafeAreaView
+            style={styles.safeArea}
+          >
+            <View style={styles.content}>
+              <View style={styles.actions}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign in"
+                  onPress={() =>
+                    router.navigate('/login')
+                  }
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    pressed &&
+                      styles.buttonPressed,
+                  ]}
+                >
+                  <Text
+                    style={
+                      styles.primaryButtonText
+                    }
+                  >
+                    Sign in
+                  </Text>
+                </Pressable>
 
-          <Button
-            label="Create account"
-            variant="secondary"
-            onPress={() =>
-              router.navigate('/signup')
-            }
-          />
-        </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Create account"
+                  onPress={() =>
+                    router.navigate('/signup')
+                  }
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    pressed &&
+                      styles.buttonPressed,
+                  ]}
+                >
+                  <Text
+                    style={
+                      styles.secondaryButtonText
+                    }
+                  >
+                    Create account
+                  </Text>
+                </Pressable>
+              </View>
 
-        <Text style={styles.tagline}>
-          {AppIdentity.tagline}
-        </Text>
-      </View>
-    </SafeAreaView>
+              <Text style={styles.tagline}>
+                {AppIdentity.tagline}
+              </Text>
+            </View>
+          </SafeAreaView>
+        )}
+      </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.background.app,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.xxxl,
+    backgroundColor: '#050507',
+  },
+
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+
+  softShade: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor:
+      'rgba(0, 0, 0, 0.04)',
+  },
+
+  bottomShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '39%',
+    backgroundColor:
+      'rgba(5, 3, 8, 0.30)',
+  },
+
+  loading: {
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
   },
 
+  safeArea: {
+    flex: 1,
+  },
+
   content: {
+    flex: 1,
+    justifyContent: 'flex-end',
     width: '100%',
-    maxWidth: 520,
+    maxWidth: 560,
     alignSelf: 'center',
-    gap: Spacing.xxl,
-  },
-
-  copy: {
-    gap: Spacing.md,
-    alignItems: 'center',
-  },
-
-  title: {
-    color: Colors.text.primary,
-    fontSize: Typography.size.display,
-    lineHeight: Typography.lineHeight.display,
-    fontWeight: '800',
-    letterSpacing: -0.7,
-    textAlign: 'center',
-  },
-
-  description: {
-    color: Colors.text.secondary,
-    fontSize: Typography.size.body,
-    lineHeight: Typography.lineHeight.body,
-    textAlign: 'center',
+    paddingHorizontal: 22,
+    paddingBottom: 30,
   },
 
   actions: {
-    gap: Spacing.md,
+    width: '100%',
+    gap: 14,
+  },
+
+  primaryButton: {
+    width: '100%',
+    minHeight: 58,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: MAGENTA,
+  },
+
+  secondaryButton: {
+    width: '100%',
+    minHeight: 58,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: '#FFFFFF',
+  },
+
+  buttonPressed: {
+    opacity: 0.88,
+  },
+
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: '800',
+    letterSpacing: -0.25,
+  },
+
+  secondaryButtonText: {
+    color: '#11131A',
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: '800',
+    letterSpacing: -0.25,
   },
 
   tagline: {
-    color: Colors.brand.secondary,
-    fontSize: Typography.size.bodySmall,
-    lineHeight: Typography.lineHeight.bodySmall,
-    fontWeight: '700',
+    marginTop: 28,
+    marginBottom: 6,
+    color: MAGENTA,
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '800',
     textAlign: 'center',
   },
 });
