@@ -1,4 +1,8 @@
 import {
+  useState,
+} from 'react';
+
+import {
   useRouter,
 } from 'expo-router';
 
@@ -25,10 +29,105 @@ import {
   FormField,
 } from '@/components/ui/form-field';
 
+import {
+  createAuthRedirectUrl,
+} from '@/lib/auth/redirect';
+
+import {
+  getSupabaseClient,
+} from '@/lib/auth/supabase';
+
 const MAGENTA = '#F5007E';
 
 export default function SignupScreen() {
   const router = useRouter();
+
+  const [email, setEmail] =
+    useState('');
+
+  const [sending, setSending] =
+    useState(false);
+
+  const [message, setMessage] =
+    useState('');
+
+  const normalizedEmail =
+    email.trim().toLowerCase();
+
+  const emailLooksValid =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      normalizedEmail,
+    );
+
+  const disabled =
+    sending ||
+    !emailLooksValid;
+
+  async function requestVerificationLink() {
+    if (disabled) {
+      return;
+    }
+
+    setSending(true);
+    setMessage('');
+
+    try {
+      const supabase =
+        getSupabaseClient();
+
+      const redirectTo =
+        createAuthRedirectUrl(
+          'create-account',
+        );
+
+      const {
+        error,
+      } =
+        await supabase.auth
+          .signInWithOtp({
+            email:
+              normalizedEmail,
+
+            options: {
+              emailRedirectTo:
+                redirectTo,
+
+              shouldCreateUser:
+                true,
+            },
+          });
+
+      if (error) {
+        throw error;
+      }
+
+      setMessage(
+        'Check your email for your secure verification link.',
+      );
+    } catch (error) {
+      const detail =
+        error instanceof Error
+          ? error.message
+              .toLowerCase()
+          : '';
+
+      if (
+        detail.includes(
+          'rate limit',
+        )
+      ) {
+        setMessage(
+          'Too many verification attempts. Please wait a few minutes and try again.',
+        );
+      } else {
+        setMessage(
+          'We could not send your verification link. Please check your email and try again.',
+        );
+      }
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -80,11 +179,20 @@ export default function SignupScreen() {
               <FormField
                 label="Email address"
                 placeholder="you@example.com"
+                value={email}
+                onChangeText={(value) => {
+                  setEmail(value);
+
+                  if (message) {
+                    setMessage('');
+                  }
+                }}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
                 autoComplete="email"
                 textContentType="emailAddress"
+                editable={!sending}
                 helperText="We'll send a secure verification link to this email."
                 style={styles.input}
               />
@@ -92,23 +200,42 @@ export default function SignupScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityState={{
-                  disabled: true,
+                  disabled,
                 }}
-                disabled
-                style={[
+                disabled={disabled}
+                onPress={
+                  requestVerificationLink
+                }
+                style={({ pressed }) => [
                   styles.primaryButton,
-                  styles.primaryButtonDisabled,
+
+                  disabled &&
+                    styles.primaryButtonDisabled,
+
+                  pressed &&
+                    !disabled &&
+                    styles.primaryButtonPressed,
                 ]}
               >
                 <Text
                   style={[
                     styles.primaryButtonText,
-                    styles.primaryButtonTextDisabled,
+
+                    disabled &&
+                      styles.primaryButtonTextDisabled,
                   ]}
                 >
-                  Verify email
+                  {sending
+                    ? 'Sending...'
+                    : 'Verify email'}
                 </Text>
               </Pressable>
+
+              {message ? (
+                <Text style={styles.message}>
+                  {message}
+                </Text>
+              ) : null}
 
               <View style={styles.dividerRow}>
                 <View style={styles.divider} />
@@ -247,6 +374,10 @@ const styles = StyleSheet.create({
     backgroundColor: MAGENTA,
   },
 
+  primaryButtonPressed: {
+    opacity: 0.88,
+  },
+
   primaryButtonDisabled: {
     backgroundColor: '#E9EBEF',
   },
@@ -260,6 +391,14 @@ const styles = StyleSheet.create({
 
   primaryButtonTextDisabled: {
     color: '#8A91A0',
+  },
+
+  message: {
+    color: '#697185',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 
   dividerRow: {

@@ -197,6 +197,29 @@ export default function AuthCallbackScreen() {
           );
         }
 
+        if (
+          intent ===
+          'create-account'
+        ) {
+          if (!active) {
+            return;
+          }
+
+          setState(
+            'complete',
+          );
+
+          setMessage(
+            'Your email has been verified. Complete your VoLTE Mobile customer profile to continue.',
+          );
+
+          router.replace(
+            '/complete-profile',
+          );
+
+          return;
+        }
+
         try {
           await verifyCustomerSession(
             data.session,
