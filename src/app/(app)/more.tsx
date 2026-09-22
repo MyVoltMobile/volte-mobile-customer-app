@@ -20,12 +20,21 @@ import {
 } from '@/components/ui/card';
 
 import {
+  LegalPolicyModal,
+} from '@/components/legal/legal-policy-modal';
+
+import {
   ShellScreen,
 } from '@/components/shell/shell-screen';
 
 import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
+
+import {
+  LEGAL_POLICIES,
+  type LegalPolicyId,
+} from '@/lib/legal/legal-policies';
 
 import {
   Colors,
@@ -54,34 +63,42 @@ const LEGAL_LINKS = [
   {
     label:
       'Privacy Policy',
-    url:
-      `${SITE_URL}/privacy`,
+
+    policyId:
+      'privacy',
   },
   {
     label:
       'Terms of Use',
-    url:
-      `${SITE_URL}/terms`,
+
+    policyId:
+      'terms',
   },
   {
     label:
       'Sales & Returns',
-    url:
-      `${SITE_URL}/sales-returns`,
+
+    policyId:
+      'sales-returns',
   },
   {
     label:
       'Delivery Policy',
-    url:
-      `${SITE_URL}/delivery-policy`,
+
+    policyId:
+      'delivery-policy',
   },
   {
     label:
       'Data Protection',
-    url:
-      `${SITE_URL}/privacy#data-protection`,
+
+    policyId:
+      'data-protection',
   },
-] as const;
+] as const satisfies ReadonlyArray<{
+  label: string;
+  policyId: LegalPolicyId;
+}>;
 
 function openExternal(
   url: string,
@@ -210,17 +227,16 @@ function TrustRow({
 
 function FooterLink({
   label,
-  url,
+  onPress,
 }: {
   label: string;
-  url: string;
+  onPress: () => void;
 }) {
   return (
     <Pressable
-      accessibilityRole="link"
-      onPress={() =>
-        openExternal(url)
-      }
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
       style={({
         pressed,
       }) => [
@@ -305,6 +321,21 @@ export default function MoreScreen() {
     setSignOutError,
   ] =
     useState('');
+
+  const [
+    activeLegalPolicyId,
+    setActiveLegalPolicyId,
+  ] =
+    useState<
+      LegalPolicyId | null
+    >(null);
+
+  const activeLegalPolicy =
+    activeLegalPolicyId
+      ? LEGAL_POLICIES[
+          activeLegalPolicyId
+        ]
+      : null;
 
   async function handleSignOut() {
     if (signingOut) {
@@ -411,8 +442,8 @@ export default function MoreScreen() {
               title="Privacy"
               description="Privacy information and account protection."
               onPress={() =>
-                openExternal(
-                  `${SITE_URL}/privacy`,
+                setActiveLegalPolicyId(
+                  'privacy',
                 )
               }
             />
@@ -674,8 +705,10 @@ export default function MoreScreen() {
                     label={
                       item.label
                     }
-                    url={
-                      item.url
+                    onPress={() =>
+                      setActiveLegalPolicyId(
+                        item.policyId,
+                      )
                     }
                   />
                 ),
@@ -714,6 +747,21 @@ export default function MoreScreen() {
           </View>
         </View>
       </View>
+
+      <LegalPolicyModal
+        policy={
+          activeLegalPolicy
+        }
+        visible={
+          activeLegalPolicy !==
+          null
+        }
+        onClose={() =>
+          setActiveLegalPolicyId(
+            null,
+          )
+        }
+      />
     </ShellScreen>
   );
 }
