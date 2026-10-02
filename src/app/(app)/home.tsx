@@ -42,11 +42,8 @@ import {
 const SHOP_URL =
   'https://voltemobile.com/shop';
 
-const BLACK =
-  '#05070C';
-
 const APP_BG =
-  '#F3F5F8';
+  '#F7F7F9';
 
 const SURFACE =
   '#FFFFFF';
@@ -62,9 +59,6 @@ const BORDER =
 
 const MAGENTA =
   '#C51B74';
-
-const PURPLE =
-  '#5735C5';
 
 function getFirstName(
   value: string | null,
@@ -373,7 +367,7 @@ function Hero() {
 
   const slideWidth =
     Math.max(
-      windowWidth,
+      windowWidth - 32,
       280,
     );
 
@@ -834,18 +828,6 @@ function OffersPreview({
       >
         <View
           style={
-            styles.offerGlowOne
-          }
-        />
-
-        <View
-          style={
-            styles.offerGlowTwo
-          }
-        />
-
-        <View
-          style={
             styles.offerIconBubble
           }
         >
@@ -1040,8 +1022,8 @@ const styles =
 
     headerSafe: {
       backgroundColor:
-        BLACK,
-      paddingBottom: 14,
+        SURFACE,
+      paddingBottom: 12,
     },
 
     headerRow: {
@@ -1056,23 +1038,23 @@ const styles =
     },
 
     brandIcon: {
-      width: 27,
-      height: 31,
+      width: 24,
+      height: 27,
     },
 
     searchButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 38,
+      height: 38,
+      borderRadius: 19,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        '#272A31',
+        '#F0F1F3',
       borderWidth: 1,
       borderColor:
-        '#363A43',
+        '#E7E8EB',
     },
 
     searchIcon: {
@@ -1092,7 +1074,7 @@ const styles =
       borderRadius: 7,
       borderWidth: 2,
       borderColor:
-        '#FFFFFF',
+        '#20232A',
     },
 
     searchHandle: {
@@ -1104,7 +1086,7 @@ const styles =
       height: 2,
       borderRadius: 1,
       backgroundColor:
-        '#FFFFFF',
+        '#20232A',
       transform: [
         {
           rotate:
@@ -1115,15 +1097,15 @@ const styles =
 
     greeting: {
       paddingHorizontal: 20,
-      paddingTop: 7,
+      paddingTop: 5,
       color:
-        '#FFFFFF',
-      fontSize: 24,
-      lineHeight: 29,
+        INK,
+      fontSize: 25,
+      lineHeight: 30,
       fontWeight:
         '700',
       letterSpacing:
-        -0.5,
+        -0.55,
     },
 
     scroll: {
@@ -1133,28 +1115,34 @@ const styles =
     },
 
     scrollContent: {
-      paddingBottom: 34,
+      paddingBottom: 30,
     },
 
     heroZone: {
       position: 'relative',
+      paddingHorizontal: 16,
+      paddingTop: 2,
       backgroundColor:
-        BLACK,
+        APP_BG,
     },
 
     heroCarousel: {
-      height: 304,
+      height: 280,
     },
 
     heroCard: {
-      height: 304,
+      height: 280,
       overflow:
         'hidden',
       justifyContent:
         'flex-end',
+      borderRadius: 24,
+      backgroundColor:
+        '#15161A',
     },
 
     heroImage: {
+      borderRadius: 24,
     },
 
     heroShade: {
@@ -1169,51 +1157,37 @@ const styles =
 
     heroContent: {
       flex: 1,
-      width: '68%',
+      width: '66%',
       justifyContent:
         'flex-end',
-      paddingLeft: 28,
-      paddingRight: 12,
-      paddingTop: 34,
-      paddingBottom: 26,
-      gap: 9,
+      paddingLeft: 22,
+      paddingRight: 10,
+      paddingTop: 24,
+      paddingBottom: 22,
+      gap: 7,
     },
 
     heroEyebrow: {
       color:
         '#F6EEF4',
-      fontSize: 10,
-      lineHeight: 14,
+      fontSize: 9,
+      lineHeight: 13,
       fontWeight:
         '700',
-      letterSpacing: 1.5,
+      letterSpacing: 1.35,
     },
 
     heroTitle: {
       color:
         '#FFFFFF',
-      fontSize: 28,
-      lineHeight: 31,
+      fontSize: 25,
+      lineHeight: 28,
       fontWeight:
         '700',
       letterSpacing:
-        -0.7,
+        -0.6,
       textShadowColor:
-        'rgba(0, 0, 0, 0.20)',
-      textShadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      textShadowRadius: 4,
-    },
-
-    heroBody: {
-      color:
-        '#F0EAF0',
-      fontSize: 14,
-      lineHeight: 19,
-      textShadowColor:
-        'rgba(0, 0, 0, 0.24)',
+        'rgba(0, 0, 0, 0.18)',
       textShadowOffset: {
         width: 0,
         height: 1,
@@ -1221,11 +1195,25 @@ const styles =
       textShadowRadius: 3,
     },
 
+    heroBody: {
+      color:
+        '#F3EEF2',
+      fontSize: 13,
+      lineHeight: 18,
+      textShadowColor:
+        'rgba(0, 0, 0, 0.20)',
+      textShadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      textShadowRadius: 2,
+    },
+
     heroButton: {
-      minHeight: 42,
-      marginTop: 6,
-      paddingHorizontal: 18,
-      borderRadius: 22,
+      minHeight: 40,
+      marginTop: 4,
+      paddingHorizontal: 16,
+      borderRadius: 20,
       alignSelf:
         'flex-start',
       flexDirection:
@@ -1234,7 +1222,7 @@ const styles =
         'center',
       justifyContent:
         'center',
-      gap: 8,
+      gap: 7,
       backgroundColor:
         '#FFFFFF',
     },
@@ -1242,7 +1230,7 @@ const styles =
     heroButtonText: {
       color:
         MAGENTA,
-      fontSize: 14,
+      fontSize: 13,
       fontWeight:
         '700',
     },
@@ -1287,12 +1275,12 @@ const styles =
 
     content: {
       paddingHorizontal: 16,
-      paddingTop: 26,
-      gap: 28,
+      paddingTop: 24,
+      gap: 24,
     },
 
     section: {
-      gap: 11,
+      gap: 10,
     },
 
     sectionHeader: {
@@ -1313,69 +1301,69 @@ const styles =
     sectionEyebrow: {
       color:
         MAGENTA,
-      fontSize: 11,
-      lineHeight: 15,
+      fontSize: 10,
+      lineHeight: 14,
       fontWeight:
         '700',
-      letterSpacing: 1.2,
+      letterSpacing: 1.0,
     },
 
     sectionTitle: {
       color:
         INK,
-      fontSize: 20,
-      lineHeight: 25,
+      fontSize: 19,
+      lineHeight: 24,
       fontWeight:
         '700',
       letterSpacing:
-        -0.3,
+        -0.25,
     },
 
     viewAll: {
       color:
-        PURPLE,
-      fontSize: 13,
-      lineHeight: 18,
+        MAGENTA,
+      fontSize: 12,
+      lineHeight: 17,
       fontWeight:
         '700',
     },
 
     activityCard: {
-      minHeight: 116,
-      padding: 17,
-      borderRadius: 22,
+      minHeight: 104,
+      padding: 16,
+      borderRadius: 18,
       borderWidth: 1,
       borderColor:
-        BORDER,
+        '#E7E9ED',
       backgroundColor:
         SURFACE,
       flexDirection:
         'row',
       alignItems:
         'center',
-      gap: 15,
+      gap: 14,
 
       shadowColor:
         '#000000',
       shadowOffset: {
         width: 0,
-        height: 6,
+        height: 3,
       },
-      shadowOpacity: 0.04,
-      shadowRadius: 15,
-      elevation: 1,
+      shadowOpacity: 0.025,
+      shadowRadius: 9,
+      elevation: 0,
     },
 
     activityIconBubble: {
-      width: 58,
-      height: 58,
-      borderRadius: 29,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        '#F0F2F6',
+        '#F1F2F4',
     },
 
     bag: {
@@ -1470,12 +1458,12 @@ const styles =
     },
 
     offerCard: {
-      minHeight: 118,
-      padding: 17,
-      borderRadius: 22,
+      minHeight: 104,
+      padding: 16,
+      borderRadius: 18,
       borderWidth: 1,
       borderColor:
-        '#E5DFE8',
+        '#E7E9ED',
       backgroundColor:
         SURFACE,
       overflow:
@@ -1484,17 +1472,17 @@ const styles =
         'row',
       alignItems:
         'center',
-      gap: 15,
+      gap: 14,
 
       shadowColor:
         '#000000',
       shadowOffset: {
         width: 0,
-        height: 6,
+        height: 3,
       },
-      shadowOpacity: 0.04,
-      shadowRadius: 15,
-      elevation: 1,
+      shadowOpacity: 0.025,
+      shadowRadius: 9,
+      elevation: 0,
     },
 
     offerGlowOne: {
@@ -1522,9 +1510,9 @@ const styles =
     },
 
     offerIconBubble: {
-      width: 58,
-      height: 58,
-      borderRadius: 29,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
       alignItems:
         'center',
       justifyContent:
@@ -1536,8 +1524,8 @@ const styles =
     offerIcon: {
       color:
         MAGENTA,
-      fontSize: 31,
-      lineHeight: 34,
+      fontSize: 27,
+      lineHeight: 30,
       fontWeight:
         '500',
     },
@@ -1548,22 +1536,22 @@ const styles =
     },
 
     offerArrowBubble: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        'rgba(255,255,255,0.82)',
+        '#F3F4F6',
     },
 
     offerArrow: {
       color:
-        PURPLE,
-      fontSize: 26,
-      lineHeight: 27,
+        MAGENTA,
+      fontSize: 24,
+      lineHeight: 25,
       fontWeight:
         '500',
     },
