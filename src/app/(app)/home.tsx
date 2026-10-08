@@ -43,7 +43,7 @@ const SHOP_URL =
   'https://voltemobile.com/shop';
 
 const APP_BG =
-  '#F7F7F9';
+  '#F5F5F7';
 
 const SURFACE =
   '#FFFFFF';
@@ -52,7 +52,7 @@ const INK =
   '#11131A';
 
 const MUTED =
-  '#687084';
+  '#6E6E73';
 
 const BORDER =
   '#E0E4EB';
@@ -596,27 +596,13 @@ function RecentActivity({
           styles.sectionHeader
         }
       >
-        <View
+        <Text
           style={
-            styles.sectionHeading
+            styles.sectionTitle
           }
         >
-          <Text
-            style={
-              styles.sectionEyebrow
-            }
-          >
-            RECENT ACTIVITY
-          </Text>
-
-          <Text
-            style={
-              styles.sectionTitle
-            }
-          >
-            Latest online order
-          </Text>
-        </View>
+          Recent activity
+        </Text>
 
         <Pressable
           accessibilityRole="button"
@@ -807,10 +793,10 @@ function OffersPreview({
     >
       <Text
         style={
-          styles.sectionEyebrow
+          styles.sectionTitle
         }
       >
-        YOUR OFFERS
+        Offers
       </Text>
 
       <Pressable
@@ -828,20 +814,6 @@ function OffersPreview({
       >
         <View
           style={
-            styles.offerIconBubble
-          }
-        >
-          <Text
-            style={
-              styles.offerIcon
-            }
-          >
-            ◇
-          </Text>
-        </View>
-
-        <View
-          style={
             styles.offerCopy
           }
         >
@@ -850,7 +822,7 @@ function OffersPreview({
               styles.cardTitle
             }
           >
-            Something for you.
+            Your offers
           </Text>
 
           <Text
@@ -858,24 +830,18 @@ function OffersPreview({
               styles.bodyText
             }
           >
-            Personalized VoLTE Mobile
-            offers will appear here.
+            See offers selected for
+            your VoLTE Mobile account.
           </Text>
         </View>
 
-        <View
+        <Text
           style={
-            styles.offerArrowBubble
+            styles.offerArrow
           }
         >
-          <Text
-            style={
-              styles.offerArrow
-            }
-          >
-            ›
-          </Text>
-        </View>
+          ›
+        </Text>
       </Pressable>
     </View>
   );
@@ -1023,11 +989,11 @@ const styles =
     headerSafe: {
       backgroundColor:
         SURFACE,
-      paddingBottom: 12,
+      paddingBottom: 10,
     },
 
     headerRow: {
-      minHeight: 48,
+      minHeight: 44,
       paddingHorizontal: 20,
       flexDirection:
         'row',
@@ -1038,23 +1004,20 @@ const styles =
     },
 
     brandIcon: {
-      width: 24,
-      height: 27,
+      width: 22,
+      height: 24,
     },
 
     searchButton: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       alignItems:
         'center',
       justifyContent:
         'center',
       backgroundColor:
-        '#F0F1F3',
-      borderWidth: 1,
-      borderColor:
-        '#E7E8EB',
+        '#F2F2F4',
     },
 
     searchIcon: {
@@ -1097,15 +1060,15 @@ const styles =
 
     greeting: {
       paddingHorizontal: 20,
-      paddingTop: 5,
+      paddingTop: 4,
       color:
         INK,
-      fontSize: 25,
-      lineHeight: 30,
+      fontSize: 28,
+      lineHeight: 34,
       fontWeight:
         '700',
       letterSpacing:
-        -0.55,
+        -0.7,
     },
 
     scroll: {
@@ -1121,28 +1084,28 @@ const styles =
     heroZone: {
       position: 'relative',
       paddingHorizontal: 16,
-      paddingTop: 2,
+      paddingTop: 6,
       backgroundColor:
         APP_BG,
     },
 
     heroCarousel: {
-      height: 280,
+      height: 272,
     },
 
     heroCard: {
-      height: 280,
+      height: 272,
       overflow:
         'hidden',
       justifyContent:
         'flex-end',
-      borderRadius: 24,
+      borderRadius: 26,
       backgroundColor:
         '#15161A',
     },
 
     heroImage: {
-      borderRadius: 24,
+      borderRadius: 26,
     },
 
     heroShade: {
@@ -1152,19 +1115,19 @@ const styles =
       bottom: 0,
       left: 0,
       backgroundColor:
-        'rgba(4, 4, 8, 0.12)',
+        'rgba(4, 4, 8, 0.18)',
     },
 
     heroContent: {
       flex: 1,
-      width: '66%',
+      width: '64%',
       justifyContent:
         'flex-end',
       paddingLeft: 22,
-      paddingRight: 10,
+      paddingRight: 12,
       paddingTop: 24,
       paddingBottom: 22,
-      gap: 7,
+      gap: 6,
     },
 
     heroEyebrow: {
@@ -1180,33 +1143,19 @@ const styles =
     heroTitle: {
       color:
         '#FFFFFF',
-      fontSize: 25,
-      lineHeight: 28,
+      fontSize: 27,
+      lineHeight: 30,
       fontWeight:
         '700',
       letterSpacing:
-        -0.6,
-      textShadowColor:
-        'rgba(0, 0, 0, 0.18)',
-      textShadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      textShadowRadius: 3,
+        -0.7,
     },
 
     heroBody: {
       color:
-        '#F3EEF2',
+        'rgba(255,255,255,0.88)',
       fontSize: 13,
       lineHeight: 18,
-      textShadowColor:
-        'rgba(0, 0, 0, 0.20)',
-      textShadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      textShadowRadius: 2,
     },
 
     heroButton: {
@@ -1224,12 +1173,12 @@ const styles =
         'center',
       gap: 7,
       backgroundColor:
-        '#FFFFFF',
+        'rgba(255,255,255,0.94)',
     },
 
     heroButtonText: {
       color:
-        MAGENTA,
+        '#1D1D1F',
       fontSize: 13,
       fontWeight:
         '700',
@@ -1237,7 +1186,7 @@ const styles =
 
     heroButtonArrow: {
       color:
-        MAGENTA,
+        '#1D1D1F',
       fontSize: 23,
       lineHeight: 23,
       fontWeight:
@@ -1275,19 +1224,19 @@ const styles =
 
     content: {
       paddingHorizontal: 16,
-      paddingTop: 24,
-      gap: 24,
+      paddingTop: 28,
+      gap: 30,
     },
 
     section: {
-      gap: 10,
+      gap: 12,
     },
 
     sectionHeader: {
       flexDirection:
         'row',
       alignItems:
-        'flex-end',
+        'center',
       justifyContent:
         'space-between',
       gap: 12,
@@ -1311,30 +1260,27 @@ const styles =
     sectionTitle: {
       color:
         INK,
-      fontSize: 19,
-      lineHeight: 24,
+      fontSize: 20,
+      lineHeight: 25,
       fontWeight:
         '700',
       letterSpacing:
-        -0.25,
+        -0.35,
     },
 
     viewAll: {
       color:
         MAGENTA,
-      fontSize: 12,
-      lineHeight: 17,
+      fontSize: 13,
+      lineHeight: 18,
       fontWeight:
-        '700',
+        '600',
     },
 
     activityCard: {
       minHeight: 104,
-      padding: 16,
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor:
-        '#E7E9ED',
+      padding: 18,
+      borderRadius: 22,
       backgroundColor:
         SURFACE,
       flexDirection:
@@ -1349,15 +1295,15 @@ const styles =
         width: 0,
         height: 3,
       },
-      shadowOpacity: 0.025,
-      shadowRadius: 9,
-      elevation: 0,
+      shadowOpacity: 0.045,
+      shadowRadius: 14,
+      elevation: 1,
     },
 
     activityIconBubble: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
       alignItems:
         'center',
       justifyContent:
@@ -1458,12 +1404,9 @@ const styles =
     },
 
     offerCard: {
-      minHeight: 104,
-      padding: 16,
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor:
-        '#E7E9ED',
+      minHeight: 96,
+      padding: 18,
+      borderRadius: 22,
       backgroundColor:
         SURFACE,
       overflow:
@@ -1549,11 +1492,12 @@ const styles =
 
     offerArrow: {
       color:
-        MAGENTA,
-      fontSize: 24,
-      lineHeight: 25,
+        '#8E8E93',
+      fontSize: 28,
+      lineHeight: 30,
       fontWeight:
-        '500',
+        '400',
+      marginLeft: 4,
     },
 
     pressed: {

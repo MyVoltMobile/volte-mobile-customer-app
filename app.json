@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.voltemobile.app"
+      "package": "com.voltemobile.app",
+      "versionCode": 1
     },
     "web": {
       "output": "static",

@@ -9,6 +9,13 @@
       "developmentClient": false,
       "distribution": "internal",
       "environment": "development"
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   }
 }
