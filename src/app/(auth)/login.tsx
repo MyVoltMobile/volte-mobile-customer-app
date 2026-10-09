@@ -22,6 +22,10 @@ import {
 } from 'react-native-safe-area-context';
 
 import {
+  useRouter,
+} from 'expo-router';
+
+import {
   FormField,
 } from '@/components/ui/form-field';
 
@@ -33,10 +37,27 @@ import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
 
+import {
+  useCustomerSession,
+} from '@/lib/customer/customer-session-provider';
+
 const MAGENTA = '#F5007E';
 
+const GOOGLE_PLAY_REVIEW_EMAIL =
+  'playreview@voltemobile.com';
+
 export default function LoginScreen() {
+  const router =
+    useRouter();
+
+  const {
+    verifyCustomerSession,
+  } = useCustomerSession();
+
   const [email, setEmail] =
+    useState('');
+
+  const [password, setPassword] =
     useState('');
 
   const [sending, setSending] =
@@ -52,6 +73,63 @@ export default function LoginScreen() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
       normalizedEmail,
     );
+
+  const isGooglePlayReviewer =
+    normalizedEmail ===
+    GOOGLE_PLAY_REVIEW_EMAIL;
+
+  async function requestReviewerSignIn() {
+    if (
+      sending ||
+      !emailLooksValid ||
+      !password
+    ) {
+      return;
+    }
+
+    setSending(true);
+    setMessage('');
+
+    try {
+      const supabase =
+        getSupabaseClient();
+
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth
+          .signInWithPassword({
+            email:
+              normalizedEmail,
+            password,
+          });
+
+      if (
+        error ||
+        !data.session
+      ) {
+        throw (
+          error ||
+          new Error(
+            'No authenticated session was returned.',
+          )
+        );
+      }
+
+      await verifyCustomerSession(
+        data.session,
+      );
+
+      router.replace('/home');
+    } catch {
+      setMessage(
+        'Reviewer sign-in could not be completed. Please check the review credentials and try again.',
+      );
+    } finally {
+      setSending(false);
+    }
+  }
 
   async function requestSignInLink() {
     if (
@@ -124,7 +202,11 @@ export default function LoginScreen() {
 
   const disabled =
     sending ||
-    !emailLooksValid;
+    !emailLooksValid ||
+    (
+      isGooglePlayReviewer &&
+      !password
+    );
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -189,9 +271,36 @@ export default function LoginScreen() {
                 autoComplete="email"
                 textContentType="emailAddress"
                 editable={!sending}
-                helperText="We'll send a secure sign-in link to your email."
+                helperText={
+                    isGooglePlayReviewer
+                      ? 'Use the reviewer password provided in Google Play Console.'
+                      : "We'll send a secure sign-in link to your email."
+                  }
                 style={styles.input}
               />
+
+              {isGooglePlayReviewer ? (
+                <FormField
+                  label="Review password"
+                  placeholder="Enter review password"
+                  value={password}
+                  onChangeText={(value) => {
+                    setPassword(value);
+
+                    if (message) {
+                      setMessage('');
+                    }
+                  }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  secureTextEntry
+                  autoComplete="password"
+                  textContentType="password"
+                  editable={!sending}
+                  helperText="Google Play reviewer access"
+                  style={styles.input}
+                />
+              ) : null}
 
               <Pressable
                 accessibilityRole="button"
@@ -200,7 +309,9 @@ export default function LoginScreen() {
                 }}
                 disabled={disabled}
                 onPress={
-                  requestSignInLink
+                  isGooglePlayReviewer
+                    ? requestReviewerSignIn
+                    : requestSignInLink
                 }
                 style={({ pressed }) => [
                   styles.primaryButton,
@@ -222,7 +333,11 @@ export default function LoginScreen() {
                   ]}
                 >
                   {sending
-                    ? 'Sending...'
+                    ? (
+                      isGooglePlayReviewer
+                        ? 'Signing in...'
+                        : 'Sending...'
+                    )
                     : 'Sign in'}
                 </Text>
               </Pressable>
@@ -235,7 +350,9 @@ export default function LoginScreen() {
             </View>
 
             <Text style={styles.securityNote}>
-              Secure email sign-in · No password required
+              {isGooglePlayReviewer
+                ? 'Secure Google Play reviewer access'
+                : 'Secure email sign-in · No password required'}
             </Text>
           </View>
         </ScrollView>
