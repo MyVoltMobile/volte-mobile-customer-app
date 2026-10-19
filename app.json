@@ -20,7 +20,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.voltemobile.app",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "output": "static",
@@ -37,7 +37,8 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
