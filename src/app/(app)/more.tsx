@@ -621,6 +621,12 @@ export default function MoreScreen() {
                   Mastercard
                 </Text>
               </View>
+
+              {['American Express', 'Diners Club International', 'Discover'].map((network) => (
+                <View key={network} style={styles.cardMark}>
+                  <Text style={styles.mastercardText}>{network}</Text>
+                </View>
+              ))}
             </View>
           </View>
 

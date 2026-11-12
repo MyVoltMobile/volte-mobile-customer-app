@@ -31,7 +31,10 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#05070C"
+          "backgroundColor": "#414042",
+          "image": "./assets/images/volte-launch-icon.png",
+          "imageWidth": 150,
+          "resizeMode": "contain"
         }
       ],
       "expo-secure-store",
