@@ -13,6 +13,7 @@ type Offer = {
   subjectToAvailability: boolean;
   currentMonthlyCents: number;
   selectedOptionId?: string | null;
+  updateRequest?: { notes: string; requestedAt: string } | null;
   reconfirmation?: { updatesNeeded: boolean } | null;
   options: { id: string; termMonths: number; monthlyPaymentCents: number; dueTodayCents: number; totalPayableCents: number }[];
 };
@@ -155,8 +156,14 @@ export default function OffersScreen() {
                     }} />}
                 </View>
               ))}
+              {offer.updateRequest && (
+                <View style={styles.stack} accessibilityLiveRegion="polite">
+                  <Text style={styles.title}>Updates requested</Text>
+                  <Text style={styles.body}>{offer.updateRequest.notes}</Text>
+                </View>
+              )}
               {offer.selectedOptionId && (offer.reconfirmation
-                ? <Text style={styles.body}>{offer.reconfirmation.updatesNeeded
+                ? <Text style={styles.body}>{offer.reconfirmation.updatesNeeded || offer.updateRequest
                   ? "Details submitted. Updates are needed before finance review can proceed."
                   : "Details confirmed for finance review."}</Text>
                 : <ReconfirmDetails offerId={offer.id} onSaved={(updatesNeeded) => {
