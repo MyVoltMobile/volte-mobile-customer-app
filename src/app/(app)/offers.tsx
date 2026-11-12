@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ShellScreen } from "@/components/shell/shell-screen";
@@ -12,6 +12,7 @@ type Offer = {
   deviceName?: string;
   subjectToAvailability: boolean;
   currentMonthlyCents: number;
+  selectedOptionId?: string | null;
   options: { id: string; termMonths: number; monthlyPaymentCents: number; dueTodayCents: number; totalPayableCents: number }[];
 };
 
@@ -24,6 +25,31 @@ function jmd(cents: number) {
 export default function OffersScreen() {
   const [offers, setOffers] = useState<Offer[] | null>(null);
   const [failed, setFailed] = useState(false);
+
+  const [saving, setSaving] = useState<string | null>(null);
+
+  async function select(offerId: string, optionId: string) {
+    if (saving) return;
+    setSaving(offerId);
+    try {
+      const response = await authenticatedCustomerFetch("/api/public/customer-trade-up-offers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offerId, optionId }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.selectedOptionId !== optionId) {
+        throw new Error(result.error || "Your option could not be saved.");
+      }
+      setOffers((current) => current?.map((offer) =>
+        offer.id === offerId ? { ...offer, selectedOptionId: optionId } : offer
+      ) ?? null);
+    } catch (error) {
+      Alert.alert("Trade-up", error instanceof Error ? error.message : "Your option could not be saved.");
+    } finally {
+      setSaving(null);
+    }
+  }
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -62,6 +88,15 @@ export default function OffersScreen() {
                 <View key={option.id}>
                   <Text style={styles.title}>{jmd(option.monthlyPaymentCents)} / month · {option.termMonths} months</Text>
                   <Text style={styles.body}>{jmd(option.dueTodayCents)} upfront · {jmd(option.totalPayableCents)} total</Text>
+                  {offer.selectedOptionId === option.id && <Text style={styles.body}>Selected for finance review</Text>}
+                  {!offer.selectedOptionId && <Button label={saving === offer.id ? "Saving…" : "Choose this term"}
+                    onPress={() => {
+                      if (saving) return;
+                      Alert.alert("Choose this term?", "Your selection will be saved for finance review.", [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Confirm", onPress: () => void select(offer.id, option.id) },
+                      ]);
+                    }} />}
                 </View>
               ))}
             </View>
