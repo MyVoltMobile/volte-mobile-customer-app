@@ -1,11 +1,15 @@
+import * as WebBrowser from 'expo-web-browser';
+import { authenticatedCustomerFetch } from '@/lib/customer/customer-api';
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
 import {
   ActivityIndicator,
+  AppState,
   Linking,
   Pressable,
   StyleSheet,
@@ -230,6 +234,47 @@ export default function IptvScreen() {
       'loading',
     );
 
+  const [renewals, setRenewals] = useState<{ subscriptionId: string; serviceName: string; amountCents: number; renewalDate: string }[]>([]);
+  const [renewalError, setRenewalError] = useState('');
+  const [paying, setPaying] = useState(false);
+  const opening = useRef(false);
+
+  const loadRenewals = useCallback(async () => {
+    try {
+      const response = await authenticatedCustomerFetch('/api/public/customer-iptv-renewals');
+      const result = await response.json();
+      setRenewals(response.ok && result.renewalCheckoutEnabled === true && Array.isArray(result.renewals) ? result.renewals : []);
+    } catch {
+      setRenewals([]);
+    }
+  }, []);
+
+  async function payRenewal(subscriptionId: string) {
+    if (opening.current) return;
+    opening.current = true;
+    setPaying(true);
+    setRenewalError('');
+    try {
+      const response = await authenticatedCustomerFetch('/api/public/customer-iptv-renewals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId }),
+      });
+      const result = await response.json();
+      const url = result?.checkout?.launchUrl;
+      if (!response.ok || typeof url !== 'string' ||
+          !/^https:\/\/pay\.voltemobile\.com\/api\/customer-installments\/launch\/VLT-IR-[a-f0-9]{32}$/.test(url)) {
+        throw new Error(result?.error || 'Secure renewal checkout could not be opened.');
+      }
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      setRenewalError(error instanceof Error ? error.message : 'Secure renewal checkout could not be opened.');
+    } finally {
+      setPaying(false);
+      opening.current = false;
+    }
+  }
+
   const load =
     useCallback(
       async () => {
@@ -261,7 +306,15 @@ export default function IptvScreen() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+    void loadRenewals();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void load();
+        void loadRenewals();
+      }
+    });
+    return () => subscription.remove();
+  }, [load, loadRenewals]);
 
   return (
     <ShellScreen
@@ -269,6 +322,19 @@ export default function IptvScreen() {
       title="My IPTV"
       description="Your VoLTE Mobile entertainment service."
     >
+      {renewals.map((renewal) => (
+        <Card key={renewal.subscriptionId}>
+          <View style={styles.card}>
+            <Text style={styles.title}>{renewal.serviceName} renewal</Text>
+            <Detail label="Amount" value={`J${(renewal.amountCents / 100).toFixed(2)}`} />
+            <Detail label="Renewal date" value={formatDate(renewal.renewalDate)} />
+            <Pressable accessibilityRole="button" disabled={paying} onPress={() => void payRenewal(renewal.subscriptionId)} style={styles.retry}>
+              <Text style={styles.retryText}>{paying ? 'Opening checkout…' : 'Pay renewal'}</Text>
+            </Pressable>
+          </View>
+        </Card>
+      ))}
+      {renewalError ? <Text accessibilityLiveRegion="polite" style={styles.helper}>{renewalError}</Text> : null}
       {state ===
       'loading' ? (
         <Card>
