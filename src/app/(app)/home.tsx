@@ -219,8 +219,10 @@ function HeroSlide({
           '../../../assets/brand/volte-mobile-home-hero.png',
         );
 
+  const sponsored = promotion?.eyebrow?.trim().toLowerCase() === 'sponsored';
+
   const eyebrow =
-    promotion?.eyebrow ||
+    (sponsored ? 'Sponsored' : promotion?.eyebrow) ||
     'POWERING EVERY CONNECTION!';
 
   const description =
@@ -311,7 +313,7 @@ function HeroSlide({
           {description}
         </Text>
 
-        {ctaLabel &&
+        {!sponsored && ctaLabel &&
         ctaUrl ? (
           <Pressable
             accessibilityRole="button"
