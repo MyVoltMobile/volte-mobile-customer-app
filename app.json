@@ -31,10 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F5007E",
-          "image": "./assets/images/volte-mobile-splash-logo.png",
-          "imageWidth": 220,
-          "resizeMode": "contain"
+          "backgroundColor": "#05070C"
         }
       ],
       "expo-secure-store",
