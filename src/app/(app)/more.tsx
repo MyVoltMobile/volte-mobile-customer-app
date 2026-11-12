@@ -1,3 +1,6 @@
+import { BiometricSettings } from '@/lib/auth/biometric-unlock';
+import { useCustomerSession } from '@/lib/customer/customer-session-provider';
+
 import {
   useRouter,
 } from 'expo-router';
@@ -307,6 +310,7 @@ function ContactLink({
 }
 
 export default function MoreScreen() {
+  const { customer } = useCustomerSession();
   const router =
     useRouter();
 
@@ -473,6 +477,8 @@ export default function MoreScreen() {
             >
               ACCOUNT ACCESS
             </Text>
+
+            {customer && <BiometricSettings key={customer.id} customerId={customer.id} />}
 
             {signOutError ? (
               <Text

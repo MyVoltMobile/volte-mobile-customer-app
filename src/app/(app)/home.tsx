@@ -1,6 +1,9 @@
 import {
   useRouter,
+  usePathname,
 } from 'expo-router';
+
+import { StatusBar } from 'expo-status-bar';
 
 import {
   useEffect,
@@ -41,6 +44,8 @@ import {
 
 const SHOP_URL =
   'https://voltemobile.com/shop';
+
+const CHARCOAL = '#414042';
 
 const APP_BG =
   '#F5F5F7';
@@ -438,6 +443,7 @@ function Hero() {
         styles.heroZone
       }
     >
+      <View pointerEvents="none" style={styles.heroBackdrop} />
       <ScrollView
         horizontal
         pagingEnabled
@@ -850,6 +856,7 @@ function OffersPreview({
 }
 
 export default function HomeScreen() {
+  const pathname = usePathname();
   const router =
     useRouter();
 
@@ -929,6 +936,7 @@ export default function HomeScreen() {
         styles.screen
       }
     >
+      {pathname === '/home' && <StatusBar style="light" />}
       <FixedHeader
         name={name}
         onSearch={() =>
@@ -990,7 +998,7 @@ const styles =
 
     headerSafe: {
       backgroundColor:
-        SURFACE,
+        CHARCOAL,
       paddingBottom: 10,
     },
 
@@ -1064,7 +1072,7 @@ const styles =
       paddingHorizontal: 20,
       paddingTop: 4,
       color:
-        INK,
+        SURFACE,
       fontSize: 28,
       lineHeight: 34,
       fontWeight:
@@ -1089,6 +1097,11 @@ const styles =
       paddingTop: 6,
       backgroundColor:
         APP_BG,
+    },
+
+    heroBackdrop: {
+      position: 'absolute', top: 0, left: 0, right: 0,
+      height: 82, backgroundColor: CHARCOAL,
     },
 
     heroCarousel: {

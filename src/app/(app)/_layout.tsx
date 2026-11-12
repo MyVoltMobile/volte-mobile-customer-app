@@ -18,6 +18,8 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
+import { BiometricGate } from '@/lib/auth/biometric-unlock';
+
 function TabGlyph({
   glyph,
   color,
@@ -42,6 +44,7 @@ function TabGlyph({
 export default function CustomerAppLayout() {
   const {
     status,
+    customer,
   } =
     useCustomerSession();
 
@@ -78,7 +81,7 @@ export default function CustomerAppLayout() {
 
   if (
     status !==
-    'authenticated'
+    'authenticated' || !customer
   ) {
     return (
       <Redirect
@@ -88,6 +91,7 @@ export default function CustomerAppLayout() {
   }
 
   return (
+    <BiometricGate key={customer.id} customerId={customer.id}>
     <Tabs
       initialRouteName="home"
       screenOptions={{
@@ -295,5 +299,6 @@ export default function CustomerAppLayout() {
         }}
       />
     </Tabs>
+    </BiometricGate>
   );
 }
