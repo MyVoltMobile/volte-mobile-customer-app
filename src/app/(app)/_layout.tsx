@@ -1,3 +1,4 @@
+import { CustomerNotificationAlerts } from '@/lib/customer/customer-notifications';
 import {
   Redirect,
   Tabs,
@@ -92,6 +93,7 @@ export default function CustomerAppLayout() {
 
   return (
     <BiometricGate key={customer.id} customerId={customer.id}>
+    <CustomerNotificationAlerts />
     <Tabs
       initialRouteName="home"
       screenOptions={{
@@ -298,6 +300,7 @@ export default function CustomerAppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
     </BiometricGate>
   );

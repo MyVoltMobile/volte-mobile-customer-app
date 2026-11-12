@@ -421,7 +421,7 @@ export default function MoreScreen() {
             <MenuRow
               title="Notifications"
               description="Updates about your account and services."
-              disabled
+              onPress={() => router.push("/notifications")}
             />
           </View>
         </Card>
