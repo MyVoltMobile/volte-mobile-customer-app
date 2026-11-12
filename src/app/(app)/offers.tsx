@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import * as DocumentPicker from "expo-document-picker";
 import { useFocusEffect } from "expo-router";
 import { Alert, Linking, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,80 @@ function ReconfirmDetails({ offerId, onSaved }: {
         </View>
       ))}
       {ready && <Button label={busy ? "Saving…" : "Submit details"} onPress={() => void submit()} />}
+    </View>
+  );
+}
+
+const documentTypes = [
+  ["GOVERNMENT_ID", "Government ID"],
+  ["TRN", "TRN"],
+  ["JOB_LETTER", "Job letter"],
+  ["PROOF_OF_ADDRESS", "Proof of address"],
+  ["PAYSLIP", "Payslip"],
+  ["OTHER", "Other document"],
+] as const;
+
+function ReplacementUpload({ offerId }: { offerId: string }) {
+  const [kind, setKind] = useState<typeof documentTypes[number][0] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function upload() {
+    if (!kind || busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/jpeg", "image/png"],
+        multiple: false,
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      if (asset.size !== undefined && (asset.size < 1 || asset.size > 3 * 1024 * 1024)) {
+        throw new Error("Select a file no larger than 3 MB.");
+      }
+      const mime = asset.mimeType || (
+        /\.pdf$/i.test(asset.name) ? "application/pdf" :
+        /\.png$/i.test(asset.name) ? "image/png" :
+        /\.jpe?g$/i.test(asset.name) ? "image/jpeg" : ""
+      );
+      if (!["application/pdf", "image/jpeg", "image/png"].includes(mime)) {
+        throw new Error("Select a PDF, JPEG or PNG file.");
+      }
+
+      const body = new FormData();
+      body.append("documentType", kind);
+      if (asset.file) body.append("file", asset.file, asset.name);
+      else {
+        // React Native FormData accepts a local URI attachment.
+        body.append("file", { uri: asset.uri, name: asset.name, type: mime } as unknown as Blob);
+      }
+      const response = await authenticatedCustomerFetch(
+        `/api/public/customer-trade-up-offers/${offerId}/documents`,
+        { method: "POST", body }
+      );
+      if (response.status === 413) throw new Error("Select a file no larger than 3 MB.");
+      const payload = await response.json();
+      if (!response.ok || !payload.document) throw new Error(payload.error || "Document could not be uploaded.");
+      setMessage("Document uploaded for staff review.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Document could not be uploaded.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.stack}>
+      <Text style={styles.title}>Upload a replacement document</Text>
+      <Text style={styles.body}>PDF, JPEG or PNG · up to 3 MB</Text>
+      {documentTypes.map(([key, label]) => (
+        <Button key={key} label={label + (kind === key ? " ✓" : "")}
+          onPress={() => { if (!busy) setKind(key); }} />
+      ))}
+      {kind && <Button label={busy ? "Working…" : "Choose file and upload"} onPress={() => void upload()} />}
+      {message ? <Text style={styles.body} accessibilityLiveRegion="polite">{message}</Text> : null}
     </View>
   );
 }
@@ -160,6 +235,7 @@ export default function OffersScreen() {
                 <View style={styles.stack} accessibilityLiveRegion="polite">
                   <Text style={styles.title}>Updates requested</Text>
                   <Text style={styles.body}>{offer.updateRequest.notes}</Text>
+                  <ReplacementUpload offerId={offer.id} />
                 </View>
               )}
               {offer.selectedOptionId && (offer.reconfirmation
