@@ -1,8 +1,9 @@
 import {
   useCallback,
-  useEffect,
   useState,
 } from 'react';
+
+import { useFocusEffect } from 'expo-router';
 
 import {
   ActivityIndicator,
@@ -32,14 +33,29 @@ import {
   Typography,
 } from '@/theme/tokens';
 
-function money(
-  value: number,
-) {
-  return `J$${Math.round(
-    value,
-  ).toLocaleString(
-    'en-US',
-  )}`;
+function money(value: number | null) {
+  return value === null
+    ? 'Unavailable'
+    : `J$${value.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+}
+
+function paymentDate(value: string | null) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return 'Unavailable';
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(date.getTime())
+    ? 'Unavailable'
+    : date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'UTC',
+      });
 }
 
 function FinanceCard({
@@ -118,64 +134,22 @@ function FinanceCard({
           </Text>
         </View>
 
-        <View
-          style={
-            styles.details
-          }
-        >
-          <View
-            style={
-              styles.row
-            }
-          >
-            <Text
-              style={
-                styles.rowLabel
-              }
-            >
-              Monthly payment
-            </Text>
-
-            <Text
-              style={
-                styles.rowValue
-              }
-            >
-              {
-                money(
-                  account
-                    .monthlyPayment,
-                )
-              }
-            </Text>
-          </View>
-
-          <View
-            style={
-              styles.row
-            }
-          >
-            <Text
-              style={
-                styles.rowLabel
-              }
-            >
-              Original amount
-            </Text>
-
-            <Text
-              style={
-                styles.rowValue
-              }
-            >
-              {
-                money(
-                  account
-                    .totalPrice,
-                )
-              }
-            </Text>
-          </View>
+        <View style={styles.details}>
+          {[
+            ['Original financed amount', money(account.originalFinancedAmount)],
+            ['Maturity date', paymentDate(account.maturityDate)],
+            ['Payment amount', money(account.monthlyPayment)],
+            ['Payment frequency', account.paymentFrequency ?? 'Unavailable'],
+            ['Next payment due', paymentDate(account.nextDueDate)],
+            ['Term', account.termMonths
+              ? `${account.termMonths} ${account.termMonths === 1 ? 'month' : 'months'}`
+              : 'Unavailable'],
+          ].map(([label, value]) => (
+            <View key={label} style={styles.row}>
+              <Text style={styles.rowLabel}>{label}</Text>
+              <Text style={styles.rowValue}>{value}</Text>
+            </View>
+          ))}
         </View>
       </View>
     </Card>
@@ -233,9 +207,9 @@ export default function FinanceScreen() {
       [],
     );
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     void load();
-  }, [load]);
+  }, [load]));
 
   return (
     <ShellScreen
@@ -478,12 +452,7 @@ const styles =
     },
 
     row: {
-      flexDirection:
-        'row',
-      justifyContent:
-        'space-between',
-      gap:
-        Spacing.md,
+      gap: Spacing.xs,
       paddingVertical:
         Spacing.md,
       borderBottomWidth: 1,

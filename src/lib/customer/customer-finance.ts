@@ -5,8 +5,12 @@ import {
 export type CustomerFinanceAccount = {
   id: string;
   deviceName: string;
-  totalPrice: number;
-  monthlyPayment: number;
+  originalFinancedAmount: number | null;
+  nextDueDate: string | null;
+  maturityDate: string | null;
+  paymentFrequency: string | null;
+  termMonths: number | null;
+  monthlyPayment: number | null;
   balanceRemaining: number;
   status: string;
   createdAt: string | null;
@@ -81,15 +85,16 @@ function normalize(
     id,
     deviceName,
 
-    totalPrice:
-      numberValue(
-        value.totalPrice,
-      ),
+    originalFinancedAmount: numberValue(value.originalFinancedAmount) || null,
+    nextDueDate: text(value.nextDueDate),
+    maturityDate: text(value.maturityDate),
+    paymentFrequency: text(value.paymentFrequency),
+    termMonths: numberValue(value.termMonths) || null,
 
     monthlyPayment:
       numberValue(
         value.monthlyPayment,
-      ),
+      ) || null,
 
     balanceRemaining:
       numberValue(
