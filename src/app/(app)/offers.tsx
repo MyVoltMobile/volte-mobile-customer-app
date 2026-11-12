@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Alert, Linking, StyleSheet, Text, View } from 'react-native';
 
@@ -58,6 +59,86 @@ async function request(suffix = '', body?: object) {
   return result;
 }
 
+const documentTypes = [
+  ['GOVERNMENT_ID', 'Government ID'],
+  ['TRN', 'TRN'],
+  ['JOB_LETTER', 'Job letter'],
+  ['PROOF_OF_ADDRESS', 'Proof of address'],
+  ['PAYSLIP', 'Payslip'],
+  ['OTHER', 'Other document'],
+] as const;
+
+const documentMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+function ReplacementDocuments({ offerId }: { offerId: string }) {
+  const [documentType, setDocumentType] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState('');
+  const uploading = useRef(false);
+
+  async function upload() {
+    if (uploading.current || !documentType) return;
+    uploading.current = true;
+    setBusy(true);
+    setStatus('');
+    try {
+      const picked = await DocumentPicker.getDocumentAsync({
+        type: documentMimeTypes,
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (picked.canceled) return;
+      const asset = picked.assets[0];
+      const name = asset.name.toLowerCase();
+      const mime = asset.mimeType && documentMimeTypes.includes(asset.mimeType)
+        ? asset.mimeType
+        : name.endsWith('.pdf') ? 'application/pdf'
+        : /\.jpe?g$/.test(name) ? 'image/jpeg'
+        : name.endsWith('.png') ? 'image/png' : '';
+      if (!mime) throw new Error('Choose a PDF, JPEG, or PNG.');
+      if (asset.size !== undefined && (asset.size < 1 || asset.size > 3 * 1024 * 1024)) {
+        throw new Error('Choose a file no larger than 3 MB.');
+      }
+
+      const form = new FormData();
+      form.append('documentType', documentType);
+      // React Native serializes a local file descriptor as a multipart file.
+      form.append('file', (asset.file ?? { uri: asset.uri, name: asset.name, type: mime }) as Blob);
+      const response = await authenticatedCustomerFetch(
+        endpoint + '/' + encodeURIComponent(offerId) + '/documents',
+        { method: 'POST', body: form },
+      );
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.document?.id) {
+        throw new Error(result?.error ?? 'Your document could not be saved.');
+      }
+      setStatus('Document uploaded for staff review.');
+      setDocumentType('');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Your document could not be uploaded.');
+    } finally {
+      uploading.current = false;
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.content}>
+      <Text style={styles.title}>Upload a replacement document</Text>
+      <Text style={styles.detail}>Choose a document type, then select a PDF, JPEG, or PNG up to 3 MB.</Text>
+      <View style={styles.documentTypes}>
+        {documentTypes.map(([value, label]) => (
+          <Button key={value} label={label} variant={value === documentType ? 'primary' : 'secondary'}
+            disabled={busy} onPress={() => setDocumentType(value)} />
+        ))}
+      </View>
+      <Button label={busy ? 'Uploading…' : 'Choose file and upload'} disabled={busy || !documentType}
+        onPress={() => void upload()} />
+      {!!status && <Text accessibilityLiveRegion="polite" style={styles.detail}>{status}</Text>}
+    </View>
+  );
+}
+
 function OfferCard({ offer, busy, submit }: {
   offer: Offer;
   busy: boolean;
@@ -112,6 +193,7 @@ function OfferCard({ offer, busy, submit }: {
           {offer.reconfirmation.updatesNeeded ? 'Details submitted. VoLTE Mobile will review the updates needed.' : 'Details confirmed. VoLTE Mobile will review your trade-up.'}
         </Text>}
         {!!offer.updateRequest?.notes && <Text style={styles.detail}>{offer.updateRequest.notes}</Text>}
+        {offer.updateRequest && <ReplacementDocuments offerId={offer.id} />}
       </View>
     </Card>
   );
@@ -189,6 +271,7 @@ export default function OffersScreen() {
 const styles = StyleSheet.create({
   content: { gap: Spacing.md },
   option: { gap: Spacing.sm },
+  documentTypes: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   answers: { flexDirection: 'row', gap: Spacing.sm },
   title: { color: Colors.text.primary, fontSize: Typography.size.titleSmall, fontWeight: '700' },
   detail: { color: Colors.text.secondary, fontSize: Typography.size.body, lineHeight: Typography.lineHeight.body },
