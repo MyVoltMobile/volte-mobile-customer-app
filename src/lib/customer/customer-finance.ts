@@ -4,6 +4,7 @@ import {
 
 export type CustomerFinanceAccount = {
   id: string;
+  installmentCheckoutEnabled: boolean;
   deviceName: string;
   originalFinancedAmount: number | null;
   nextDueDate: string | null;
@@ -61,6 +62,7 @@ function numberValue(
 
 function normalize(
   value: unknown,
+  installmentCheckoutEnabled: boolean,
 ): CustomerFinanceAccount | null {
   if (!isRecord(value)) {
     return null;
@@ -83,6 +85,7 @@ function normalize(
 
   return {
     id,
+    installmentCheckoutEnabled,
     deviceName,
 
     originalFinancedAmount: numberValue(value.originalFinancedAmount) || null,
@@ -151,11 +154,26 @@ export async function getCustomerFinanceAccounts() {
   }
 
   return result.accounts
-    .map(normalize)
+    .map((account) => normalize(account, result.installmentCheckoutEnabled === true))
     .filter(
       (
         account,
       ): account is CustomerFinanceAccount =>
         account !== null,
     );
+}
+
+export async function startCustomerInstallmentCheckout(accountId: string) {
+  const response = await authenticatedCustomerFetch('/api/public/customer-finance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accountId }),
+  });
+  const result = await response.json().catch(() => null);
+  const launchUrl = result?.checkout?.launchUrl;
+  if (!response.ok || result?.ok !== true || typeof launchUrl !== 'string' ||
+      !/^https:\/\/pay\.voltemobile\.com\/api\/customer-installments\/launch\/VLT-FI-[a-f0-9]{32}$/.test(launchUrl)) {
+    throw new Error(typeof result?.error === 'string' ? result.error : 'Secure checkout could not be opened.');
+  }
+  return launchUrl;
 }
