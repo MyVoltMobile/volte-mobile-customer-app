@@ -13,6 +13,7 @@ type Offer = {
   subjectToAvailability: boolean;
   currentMonthlyCents: number;
   selectedOptionId?: string | null;
+  reconfirmation?: { updatesNeeded: boolean } | null;
   options: { id: string; termMonths: number; monthlyPaymentCents: number; dueTodayCents: number; totalPayableCents: number }[];
 };
 
@@ -20,6 +21,61 @@ function jmd(cents: number) {
   return "J$" + (cents / 100).toLocaleString("en-JM", {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   });
+}
+
+const questions = [
+  ["addressCurrent", "Is your address still current?"],
+  ["employmentCurrent", "Are your employment details still current?"],
+  ["incomeSameOrHigher", "Is your income the same or higher?"],
+  ["documentsCurrent", "Are the documents on file still valid?"],
+] as const;
+
+function ReconfirmDetails({ offerId, onSaved }: {
+  offerId: string;
+  onSaved: (updatesNeeded: boolean) => void;
+}) {
+  const [answers, setAnswers] = useState<Partial<Record<typeof questions[number][0], boolean>>>({});
+  const [busy, setBusy] = useState(false);
+  const ready = questions.every(([key]) => typeof answers[key] === "boolean");
+
+  async function submit() {
+    if (!ready || busy) return;
+    setBusy(true);
+    try {
+      const response = await authenticatedCustomerFetch("/api/public/customer-trade-up-offers/reconfirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offerId, ...answers }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.reconfirmed !== true || typeof result.updatesNeeded !== "boolean") {
+        throw new Error(result.error || "Your details could not be saved.");
+      }
+      onSaved(result.updatesNeeded);
+    } catch (error) {
+      Alert.alert("Trade-up", error instanceof Error ? error.message : "Your details could not be saved.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.stack}>
+      <Text style={styles.title}>Confirm your details</Text>
+      {questions.map(([key, label]) => (
+        <View key={key} style={styles.stack}>
+          <Text style={styles.body}>{label}</Text>
+          <View style={{ flexDirection: "row", gap: Spacing.sm }}>
+            {[true, false].map((value) => (
+              <Button key={String(value)} label={(value ? "Yes" : "No") + (answers[key] === value ? " ✓" : "")}
+                onPress={() => { if (!busy) setAnswers((previous) => ({ ...previous, [key]: value })); }} />
+            ))}
+          </View>
+        </View>
+      ))}
+      {ready && <Button label={busy ? "Saving…" : "Submit details"} onPress={() => void submit()} />}
+    </View>
+  );
 }
 
 export default function OffersScreen() {
@@ -99,6 +155,14 @@ export default function OffersScreen() {
                     }} />}
                 </View>
               ))}
+              {offer.selectedOptionId && (offer.reconfirmation
+                ? <Text style={styles.body}>{offer.reconfirmation.updatesNeeded
+                  ? "Details submitted. Updates are needed before finance review can proceed."
+                  : "Details confirmed for finance review."}</Text>
+                : <ReconfirmDetails offerId={offer.id} onSaved={(updatesNeeded) => {
+                  setOffers((current) => current?.map((item) => item.id === offer.id
+                    ? { ...item, reconfirmation: { updatesNeeded } } : item) ?? null);
+                }} />)}
             </View>
           </Card>
         ))}
