@@ -1,12 +1,15 @@
 import {
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
+import * as WebBrowser from 'expo-web-browser';
 import { useFocusEffect } from 'expo-router';
 
 import {
   ActivityIndicator,
+  AppState,
   Pressable,
   StyleSheet,
   Text,
@@ -23,6 +26,7 @@ import {
 
 import {
   getCustomerFinanceAccounts,
+  startCustomerInstallmentCheckout,
   type CustomerFinanceAccount,
 } from '@/lib/customer/customer-finance';
 
@@ -60,7 +64,11 @@ function paymentDate(value: string | null) {
 
 function FinanceCard({
   account,
+  onPay,
+  busy,
 }: {
+  onPay: () => void;
+  busy: boolean;
   account:
     CustomerFinanceAccount;
 }) {
@@ -151,6 +159,11 @@ function FinanceCard({
             </View>
           ))}
         </View>
+        {account.installmentCheckoutEnabled && (
+          <Pressable accessibilityRole="button" disabled={busy} onPress={onPay} style={[styles.retry, busy && { opacity: 0.6 }]}>
+            <Text style={styles.retryText}>{busy ? "Opening checkout…" : "Pay instalment"}</Text>
+          </Pressable>
+        )}
       </View>
     </Card>
   );
@@ -176,6 +189,10 @@ export default function FinanceScreen() {
     setFailed,
   ] =
     useState(false);
+
+  const [checkoutError, setCheckoutError] = useState('');
+  const [paying, setPaying] = useState(false);
+  const openingCheckout = useRef(false);
 
   const load =
     useCallback(
@@ -209,7 +226,27 @@ export default function FinanceScreen() {
 
   useFocusEffect(useCallback(() => {
     void load();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void load();
+    });
+    return () => subscription.remove();
   }, [load]));
+
+  async function pay(accountId: string) {
+    if (openingCheckout.current) return;
+    openingCheckout.current = true;
+    setPaying(true);
+    setCheckoutError('');
+    try {
+      const url = await startCustomerInstallmentCheckout(accountId);
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'Secure checkout could not be opened.');
+    } finally {
+      openingCheckout.current = false;
+      setPaying(false);
+    }
+  }
 
   return (
     <ShellScreen
@@ -332,39 +369,16 @@ export default function FinanceScreen() {
                 account={
                   account
                 }
-              />
+               onPay={() => void pay(account.id)} busy={paying} />
             ),
           )}
         </View>
       ) : null}
 
-      <Card>
-        <View
-          style={
-            styles.notice
-          }
-        >
-          <Text
-            style={
-              styles.noticeTitle
-            }
-          >
-            Payments
-          </Text>
-
-          <Text
-            style={
-              styles.helper
-            }
-          >
-            Secure in-app payment
-            options will be connected
-            through the verified
-            VoLTE Mobile payment
-            authority.
-          </Text>
-        </View>
-      </Card>
+      {checkoutError ? <Card><Text accessibilityLiveRegion="polite" style={styles.helper}>{checkoutError}</Text></Card> : null}
+      {accounts.length > 0 && !accounts.some((account) => account.installmentCheckoutEnabled) ? (
+        <Card><Text style={styles.helper}>In-app instalment payments are currently unavailable.</Text></Card>
+      ) : null}
     </ShellScreen>
   );
 }
