@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { customerApiBaseUrl } from '@/lib/customer/customer-api';
+
 import {
   Redirect,
   useRouter,
@@ -36,6 +39,29 @@ const MAGENTA = '#F5007E';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const [heroUrl, setHeroUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWelcomeImage() {
+      try {
+        const response = await fetch(`${customerApiBaseUrl()}/api/public/app-sign-in-image`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!controller.signal.aborted && typeof data.imageUrl === 'string' && data.imageUrl.startsWith('https://')) {
+          setHeroUrl(data.imageUrl);
+        }
+      } catch {
+        // Keep the bundled welcome image when the ERP is unavailable.
+      }
+    }
+
+    void loadWelcomeImage();
+    return () => controller.abort();
+  }, []);
 
   const {
     status,
@@ -54,7 +80,8 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
 
       <ImageBackground
-        source={LOGIN_HERO}
+        source={heroUrl ? { uri: heroUrl } : LOGIN_HERO}
+        onError={() => setHeroUrl(null)}
         resizeMode="cover"
         style={styles.background}
       >
