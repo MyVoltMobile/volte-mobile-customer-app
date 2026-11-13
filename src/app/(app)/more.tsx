@@ -1,3 +1,6 @@
+import { BiometricSettings } from '@/lib/auth/biometric-unlock';
+import { useCustomerSession } from '@/lib/customer/customer-session-provider';
+
 import {
   useRouter,
 } from 'expo-router';
@@ -307,6 +310,7 @@ function ContactLink({
 }
 
 export default function MoreScreen() {
+  const { customer } = useCustomerSession();
   const router =
     useRouter();
 
@@ -417,7 +421,7 @@ export default function MoreScreen() {
             <MenuRow
               title="Notifications"
               description="Updates about your account and services."
-              disabled
+              onPress={() => router.push("/notifications")}
             />
           </View>
         </Card>
@@ -473,6 +477,8 @@ export default function MoreScreen() {
             >
               ACCOUNT ACCESS
             </Text>
+
+            {customer && <BiometricSettings key={customer.id} customerId={customer.id} />}
 
             {signOutError ? (
               <Text
@@ -621,6 +627,12 @@ export default function MoreScreen() {
                   Mastercard
                 </Text>
               </View>
+
+              {['American Express', 'Diners Club International', 'Discover'].map((network) => (
+                <View key={network} style={styles.cardMark}>
+                  <Text style={styles.mastercardText}>{network}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
