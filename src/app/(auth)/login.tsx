@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
 } from 'react';
 
@@ -41,6 +42,8 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
+import { customerApiBaseUrl } from '@/lib/customer/customer-api';
+
 const MAGENTA = '#F5007E';
 
 const GOOGLE_PLAY_REVIEW_EMAIL =
@@ -65,6 +68,28 @@ export default function LoginScreen() {
 
   const [message, setMessage] =
     useState('');
+
+  const [signInImage, setSignInImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function loadImage() {
+      try {
+        const response = await fetch(`${customerApiBaseUrl()}/api/public/app-sign-in-image`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!controller.signal.aborted && typeof data.imageUrl === 'string' && data.imageUrl.startsWith('https://')) {
+          setSignInImage(data.imageUrl);
+        }
+      } catch {
+        // Keep the bundled sign-in artwork when the service is unavailable.
+      }
+    }
+    void loadImage();
+    return () => controller.abort();
+  }, []);
 
   const normalizedEmail =
     email.trim().toLowerCase();
@@ -231,9 +256,8 @@ export default function LoginScreen() {
               <Image
                 accessibilityLabel="VoLTE Mobile"
                 resizeMode="contain"
-                source={require(
-                  '../../../assets/brand/volte-mobile-icon.png'
-                )}
+                source={signInImage ? { uri: signInImage } : require('../../../assets/brand/volte-mobile-icon.png')}
+                onError={() => setSignInImage(null)}
                 style={styles.brandIcon}
               />
             </View>
