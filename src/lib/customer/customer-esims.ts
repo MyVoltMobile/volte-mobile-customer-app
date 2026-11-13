@@ -13,6 +13,8 @@ export type CustomerEsim = {
   status: string | null;
   quantity: number;
   msisdn: string | null;
+  qrSvg: string | null;
+  lpaString: string | null;
   iosInstallUrl: string | null;
   androidInstallUrl: string | null;
   activatedAt: string | null;
@@ -146,6 +148,8 @@ function normalizeEsim(
         value.msisdn,
       ),
 
+    qrSvg: nullableString(value.qrSvg),
+    lpaString: nullableString(value.lpaString),
     iosInstallUrl:
       nullableString(
         value.iosInstallUrl,
