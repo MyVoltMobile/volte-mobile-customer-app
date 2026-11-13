@@ -1,3 +1,4 @@
+import { enrollAndroidPasskey } from './android-passkey';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
@@ -59,6 +60,15 @@ export function BiometricSettings({ customerId }: { customerId: string }) {
       <Button variant="secondary" disabled={busy || enabled === null}
         label={enabled ? 'Turn off fingerprint unlock' : 'Enable fingerprint unlock'}
         onPress={() => void toggle()} />
+      <Button label="Set up fingerprint sign-in" variant="secondary" disabled={busy}
+        onPress={() => {
+          setBusy(true);
+          setMessage('');
+          void enrollAndroidPasskey()
+            .then(() => setMessage('Fingerprint sign-in is ready.'))
+            .catch(() => setMessage('Could not set up fingerprint sign-in.'))
+            .finally(() => setBusy(false));
+        }} />
       {!!message && <Text accessibilityLiveRegion="polite">{message}</Text>}
     </View>
   );
