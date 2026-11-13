@@ -4,6 +4,8 @@ import {
   useState,
 } from 'react';
 
+import { Image } from 'expo-image';
+
 import {
   ActivityIndicator,
   Linking,
@@ -136,6 +138,8 @@ function EsimCard({
 }: {
   esim: CustomerEsim;
 }) {
+  const [setup, setSetup] = useState<'qr' | 'manual' | null>(null);
+  const [, address, code] = esim.lpaString?.split('$') ?? [];
   const installUrl =
     Platform.OS === 'ios'
       ? esim.iosInstallUrl
@@ -259,6 +263,34 @@ function EsimCard({
           />
         </View>
 
+        {esim.qrSvg ? (
+          <Button label={setup === 'qr' ? 'Hide QR code' : 'Show QR code'}
+            onPress={() => setSetup(setup === 'qr' ? null : 'qr')} />
+        ) : null}
+        {esim.lpaString ? (
+          <Button label={setup === 'manual' ? 'Hide manual setup' : 'Manual setup'}
+            onPress={() => setSetup(setup === 'manual' ? null : 'manual')} />
+        ) : null}
+        {setup === 'qr' && esim.qrSvg ? (
+          <View>
+            <Text>Open Add eSIM on your phone and scan this code from another screen.</Text>
+            <Image
+              accessibilityLabel="eSIM installation QR code"
+              source={{ uri: `data:image/svg+xml;base64,${btoa(esim.qrSvg)}` }}
+              style={{ width: 240, maxWidth: '100%', aspectRatio: 1, alignSelf: 'center' }}
+              contentFit="contain"
+              cachePolicy="none"
+            />
+          </View>
+        ) : null}
+        {setup === 'manual' && esim.lpaString ? (
+          <View>
+            <Text>Open Add eSIM in Settings and choose manual entry if available.</Text>
+            <DetailRow label="SM-DP+ address" value={address ?? null} />
+            <DetailRow label="Activation code" value={code ?? null} />
+            <DetailRow label="Full activation string" value={esim.lpaString} />
+          </View>
+        ) : null}
         {installUrl ? (
           <Button
             label="Install eSIM"
