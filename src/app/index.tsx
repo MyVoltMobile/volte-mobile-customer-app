@@ -1,3 +1,5 @@
+import { hasAndroidPasskey, signInWithAndroidPasskey } from '@/lib/auth/android-passkey';
+import { Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import { customerApiBaseUrl } from '@/lib/customer/customer-api';
 
@@ -64,8 +66,20 @@ export default function WelcomeScreen() {
   }, []);
 
   const {
-    status,
+    status, verifyCustomerSession,
   } = useCustomerSession();
+
+  const [passkeyReady, setPasskeyReady] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') return;
+    let active = true;
+    void hasAndroidPasskey().then((ready) => {
+      if (active) setPasskeyReady(ready);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [status]);
 
   if (
     status === 'authenticated'
@@ -130,6 +144,19 @@ export default function WelcomeScreen() {
                     Sign in
                   </Text>
                 </Pressable>
+
+                {passkeyReady && (
+                  <Pressable accessibilityRole="button" disabled={signingIn}
+                    style={styles.secondaryButton} onPress={() => {
+                      setSigningIn(true);
+                      void signInWithAndroidPasskey()
+                        .then(() => verifyCustomerSession())
+                        .catch(() => Alert.alert('Fingerprint sign-in unavailable', 'Try again or sign in by email.'))
+                        .finally(() => setSigningIn(false));
+                    }}>
+                    <Text style={styles.secondaryButtonText}>Sign in with fingerprint</Text>
+                  </Pressable>
+                )}
 
                 <Pressable
                   accessibilityRole="button"
