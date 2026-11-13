@@ -2,7 +2,7 @@ import {
   getSupabaseClient,
 } from '@/lib/auth/supabase';
 
-function customerApiBaseUrl() {
+export function customerApiBaseUrl() {
   const configured =
     process.env
       .EXPO_PUBLIC_API_BASE_URL

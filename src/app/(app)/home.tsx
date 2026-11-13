@@ -142,9 +142,11 @@ function SearchIcon() {
 function FixedHeader({
   name,
   onSearch,
+  onNotifications,
 }: {
   name: string;
   onSearch: () => void;
+  onNotifications: () => void;
 }) {
   return (
     <SafeAreaView
@@ -171,6 +173,11 @@ function FixedHeader({
           }
         />
 
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Notifications"
+          onPress={onNotifications} style={styles.searchButton}>
+          <Text style={{ fontSize: 21 }}>🔔</Text>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Search VoLTE Mobile"
@@ -188,6 +195,7 @@ function FixedHeader({
         >
           <SearchIcon />
         </Pressable>
+        </View>
       </View>
 
       <Text
@@ -939,6 +947,7 @@ export default function HomeScreen() {
       {pathname === '/home' && <StatusBar style="light" />}
       <FixedHeader
         name={name}
+        onNotifications={() => router.navigate('/notifications')}
         onSearch={() =>
           router.navigate(
             '/search',

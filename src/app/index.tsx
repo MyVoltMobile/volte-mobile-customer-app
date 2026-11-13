@@ -1,3 +1,8 @@
+import { hasAndroidPasskey, signInWithAndroidPasskey } from '@/lib/auth/android-passkey';
+import { Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import { customerApiBaseUrl } from '@/lib/customer/customer-api';
+
 import {
   Redirect,
   useRouter,
@@ -36,10 +41,45 @@ const MAGENTA = '#F5007E';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const [heroUrl, setHeroUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWelcomeImage() {
+      try {
+        const response = await fetch(`${customerApiBaseUrl()}/api/public/app-sign-in-image`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!controller.signal.aborted && typeof data.imageUrl === 'string' && data.imageUrl.startsWith('https://')) {
+          setHeroUrl(data.imageUrl);
+        }
+      } catch {
+        // Keep the bundled welcome image when the ERP is unavailable.
+      }
+    }
+
+    void loadWelcomeImage();
+    return () => controller.abort();
+  }, []);
 
   const {
-    status,
+    status, verifyCustomerSession,
   } = useCustomerSession();
+
+  const [passkeyReady, setPasskeyReady] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') return;
+    let active = true;
+    void hasAndroidPasskey().then((ready) => {
+      if (active) setPasskeyReady(ready);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [status]);
 
   if (
     status === 'authenticated'
@@ -54,7 +94,8 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
 
       <ImageBackground
-        source={LOGIN_HERO}
+        source={heroUrl ? { uri: heroUrl } : LOGIN_HERO}
+        onError={() => setHeroUrl(null)}
         resizeMode="cover"
         style={styles.background}
       >
@@ -103,6 +144,19 @@ export default function WelcomeScreen() {
                     Sign in
                   </Text>
                 </Pressable>
+
+                {passkeyReady && (
+                  <Pressable accessibilityRole="button" disabled={signingIn}
+                    style={styles.secondaryButton} onPress={() => {
+                      setSigningIn(true);
+                      void signInWithAndroidPasskey()
+                        .then(() => verifyCustomerSession())
+                        .catch(() => Alert.alert('Fingerprint sign-in unavailable', 'Try again or sign in by email.'))
+                        .finally(() => setSigningIn(false));
+                    }}>
+                    <Text style={styles.secondaryButtonText}>Sign in with fingerprint</Text>
+                  </Pressable>
+                )}
 
                 <Pressable
                   accessibilityRole="button"
