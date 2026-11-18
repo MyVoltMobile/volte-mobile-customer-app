@@ -150,7 +150,7 @@ export default function WelcomeScreen() {
                     style={styles.secondaryButton} onPress={() => {
                       setSigningIn(true);
                       void signInWithAndroidPasskey()
-                        .then(() => verifyCustomerSession())
+                        .then((session) => verifyCustomerSession(session))
                         .catch(() => Alert.alert('Fingerprint sign-in unavailable', 'Try again or sign in by email.'))
                         .finally(() => setSigningIn(false));
                     }}>
