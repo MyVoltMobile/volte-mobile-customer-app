@@ -119,28 +119,6 @@ function formatDate(
   );
 }
 
-function SearchIcon() {
-  return (
-    <View
-      style={
-        styles.searchIcon
-      }
-    >
-      <View
-        style={
-          styles.searchLens
-        }
-      />
-
-      <View
-        style={
-          styles.searchHandle
-        }
-      />
-    </View>
-  );
-}
-
 function FixedHeader({
   name,
   onSearch,
@@ -180,7 +158,7 @@ function FixedHeader({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         <Pressable accessibilityRole="button" accessibilityLabel={hasUnread ? "Notifications, unread messages" : "Notifications"}
           onPress={onNotifications} hitSlop={4}
-          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}>
           <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
             size={21} tintColor="#E4E4E7" />
           {hasUnread && <View style={styles.unreadDot} />}
@@ -195,12 +173,13 @@ function FixedHeader({
           style={({
             pressed,
           }) => [
-            styles.searchButton,
+            styles.headerAction,
             pressed &&
               styles.pressed,
           ]}
         >
-          <SearchIcon />
+          <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+            size={21} tintColor="#E4E4E7" />
         </Pressable>
         </View>
       </View>
@@ -1050,62 +1029,12 @@ const styles =
       backgroundColor: '#E52C8D',
     },
 
-    notificationButton: {
+    headerAction: {
       width: 44,
       height: 44,
       borderRadius: 22,
       alignItems: 'center',
       justifyContent: 'center',
-    },
-
-    searchButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      alignItems:
-        'center',
-      justifyContent:
-        'center',
-      backgroundColor:
-        '#F2F2F4',
-    },
-
-    searchIcon: {
-      width: 20,
-      height: 20,
-      position:
-        'relative',
-    },
-
-    searchLens: {
-      position:
-        'absolute',
-      left: 1,
-      top: 1,
-      width: 13,
-      height: 13,
-      borderRadius: 7,
-      borderWidth: 2,
-      borderColor:
-        '#20232A',
-    },
-
-    searchHandle: {
-      position:
-        'absolute',
-      right: 0,
-      bottom: 3,
-      width: 8,
-      height: 2,
-      borderRadius: 1,
-      backgroundColor:
-        '#20232A',
-      transform: [
-        {
-          rotate:
-            '45deg',
-        },
-      ],
     },
 
     greeting: {
