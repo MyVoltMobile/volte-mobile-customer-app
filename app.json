@@ -20,7 +20,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.voltemobile.app",
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "output": "static",

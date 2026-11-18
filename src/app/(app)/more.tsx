@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { BiometricSettings } from '@/lib/auth/biometric-unlock';
 import { useCustomerSession } from '@/lib/customer/customer-session-provider';
 
@@ -600,37 +601,16 @@ export default function MoreScreen() {
                 styles.cards
               }
             >
-              <View
-                style={
-                  styles.cardMark
-                }
-              >
-                <Text
-                  style={
-                    styles.visaText
-                  }
-                >
-                  VISA
-                </Text>
-              </View>
-
-              <View
-                style={
-                  styles.cardMark
-                }
-              >
-                <Text
-                  style={
-                    styles.mastercardText
-                  }
-                >
-                  Mastercard
-                </Text>
-              </View>
-
-              {['American Express', 'Diners Club International', 'Discover'].map((network) => (
-                <View key={network} style={styles.cardMark}>
-                  <Text style={styles.mastercardText}>{network}</Text>
+              {[
+                ['Visa', require('../../../assets/brand/payment/visa.svg')],
+                ['Mastercard', require('../../../assets/brand/payment/mastercard.svg')],
+                ['American Express', require('../../../assets/brand/payment/amex.svg')],
+                ['Diners Club International', require('../../../assets/brand/payment/diners.svg')],
+                ['Discover', require('../../../assets/brand/payment/discover.svg')],
+              ].map(([name, source]) => (
+                <View key={name} style={styles.cardMark}>
+                  <Image source={source} contentFit="contain" style={styles.cardLogo}
+                    accessible accessibilityLabel={name} />
                 </View>
               ))}
             </View>
@@ -1034,39 +1014,15 @@ const styles =
     },
 
     cardMark: {
-      minWidth: 112,
-      minHeight: 54,
-      paddingHorizontal:
-        Spacing.lg,
-      borderRadius:
-        Radius.md,
-      backgroundColor:
-        '#FFFFFF',
-      alignItems:
-        'center',
-      justifyContent:
-        'center',
+      width: 74,
+      height: 42,
+      borderRadius: 8,
+      backgroundColor: '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
-    visaText: {
-      color:
-        '#1A1F71',
-      fontSize:
-        Typography.size.body,
-      fontWeight:
-        '700',
-      fontStyle:
-        'italic',
-    },
-
-    mastercardText: {
-      color:
-        '#171922',
-      fontSize:
-        Typography.size.bodySmall,
-      fontWeight:
-        '700',
-    },
+    cardLogo: { width: 60, height: 28 },
 
     address: {
       color:

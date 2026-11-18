@@ -1,7 +1,8 @@
 import { hasAndroidPasskey, signInWithAndroidPasskey } from '@/lib/auth/android-passkey';
 import { Alert } from 'react-native';
 import { useEffect, useState } from 'react';
-import { customerApiBaseUrl } from '@/lib/customer/customer-api';
+import { useWelcomeImage } from '@/lib/customer/use-welcome-image';
+import { SymbolView } from 'expo-symbols';
 
 import {
   Redirect,
@@ -33,37 +34,11 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
-const LOGIN_HERO = require(
-  '../../assets/brand/volte-mobile-login-hero.png',
-);
-
 const MAGENTA = '#F5007E';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const [heroUrl, setHeroUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadWelcomeImage() {
-      try {
-        const response = await fetch(`${customerApiBaseUrl()}/api/public/app-sign-in-image`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!controller.signal.aborted && typeof data.imageUrl === 'string' && data.imageUrl.startsWith('https://')) {
-          setHeroUrl(data.imageUrl);
-        }
-      } catch {
-        // Keep the bundled welcome image when the ERP is unavailable.
-      }
-    }
-
-    void loadWelcomeImage();
-    return () => controller.abort();
-  }, []);
+  const welcomeImage = useWelcomeImage();
 
   const {
     status, verifyCustomerSession,
@@ -94,8 +69,7 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
 
       <ImageBackground
-        source={heroUrl ? { uri: heroUrl } : LOGIN_HERO}
-        onError={() => setHeroUrl(null)}
+        {...welcomeImage}
         resizeMode="cover"
         style={styles.background}
       >
@@ -150,10 +124,11 @@ export default function WelcomeScreen() {
                     style={styles.secondaryButton} onPress={() => {
                       setSigningIn(true);
                       void signInWithAndroidPasskey()
-                        .then(() => verifyCustomerSession())
+                        .then((session) => verifyCustomerSession(session))
                         .catch(() => Alert.alert('Fingerprint sign-in unavailable', 'Try again or sign in by email.'))
                         .finally(() => setSigningIn(false));
                     }}>
+                    <SymbolView name={{ ios: 'touchid', android: 'fingerprint' }} size={22} tintColor="#20232A" />
                     <Text style={styles.secondaryButtonText}>Sign in with fingerprint</Text>
                   </Pressable>
                 )}
@@ -255,6 +230,8 @@ const styles = StyleSheet.create({
   },
 
   secondaryButton: {
+    flexDirection: 'row',
+    gap: 8,
     width: '100%',
     minHeight: 58,
     borderRadius: 32,

@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import {
   useRouter,
   usePathname,
@@ -173,10 +174,12 @@ function FixedHeader({
           }
         />
 
-        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Notifications"
-          onPress={onNotifications} style={styles.searchButton}>
-          <Text style={{ fontSize: 21 }}>🔔</Text>
+          onPress={onNotifications} hitSlop={4}
+          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}>
+          <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
+            size={21} tintColor="#E4E4E7" />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -222,8 +225,9 @@ function HeroSlide({
   const fallback =
     promotion === null;
 
+  const [imageFailed, setImageFailed] = useState(false);
   const imageSource =
-    promotion?.imageUrl
+    promotion?.imageUrl && !imageFailed
       ? {
           uri:
             promotion.imageUrl,
@@ -257,6 +261,7 @@ function HeroSlide({
       source={
         imageSource
       }
+      onError={promotion?.imageUrl && !imageFailed ? () => setImageFailed(true) : undefined}
       resizeMode="cover"
       imageStyle={
         styles.heroImage
@@ -391,8 +396,8 @@ function Hero() {
     setPromotions,
   ] =
     useState<
-      CustomerPromotion[]
-    >([]);
+      CustomerPromotion[] | null
+    >(null);
 
   const [
     activeIndex,
@@ -441,9 +446,7 @@ function Hero() {
     };
   }, []);
 
-  const hasPromotions =
-    promotions.length >
-    0;
+  const promotionCount = promotions?.length ?? 0;
 
   return (
     <View
@@ -456,11 +459,11 @@ function Hero() {
         horizontal
         pagingEnabled
         bounces={
-          promotions.length >
+          promotionCount >
           1
         }
         scrollEnabled={
-          promotions.length >
+          promotionCount >
           1
         }
         showsHorizontalScrollIndicator={
@@ -473,7 +476,7 @@ function Hero() {
           event,
         ) => {
           if (
-            promotions.length <=
+            promotionCount <=
             1
           ) {
             return;
@@ -493,14 +496,16 @@ function Hero() {
               0,
               Math.min(
                 nextIndex,
-                promotions.length -
+                promotionCount -
                   1,
               ),
             ),
           );
         }}
       >
-        {hasPromotions
+        {promotions === null ? (
+          <View style={[styles.heroCard, { width: slideWidth }]} />
+        ) : promotionCount > 0
           ? promotions.map(
               (
                 promotion,
@@ -530,7 +535,7 @@ function Hero() {
             )}
       </ScrollView>
 
-      {promotions.length >
+      {promotions && promotionCount >
       1 ? (
         <View
           style={
@@ -1025,6 +1030,14 @@ const styles =
     brandIcon: {
       width: 22,
       height: 24,
+    },
+
+    notificationButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     searchButton: {
