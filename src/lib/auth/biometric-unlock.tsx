@@ -119,7 +119,7 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
   }
 
   return (
-    <ImageBackground {...welcomeImage} resizeMode="cover" style={styles.screen}>
+    <ImageBackground {...welcomeImage} resizeMode="cover" style={[styles.screen, styles.unlockBackground]}>
       <StatusBar style="light" />
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.scrim]} />
       <SafeAreaView style={styles.screen}>
@@ -153,6 +153,7 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  unlockBackground: { backgroundColor: '#171219' },
   scrim: { backgroundColor: 'rgba(11, 12, 18, 0.26)' },
   unlockContent: { flexGrow: 1, justifyContent: 'flex-end', padding: 20 },
   actions: { gap: 12 },
