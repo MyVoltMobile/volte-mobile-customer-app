@@ -1,6 +1,10 @@
+import { SymbolView } from 'expo-symbols';
 import {
   useRouter,
+  usePathname,
 } from 'expo-router';
+
+import { StatusBar } from 'expo-status-bar';
 
 import {
   useEffect,
@@ -41,6 +45,8 @@ import {
 
 const SHOP_URL =
   'https://voltemobile.com/shop';
+
+const CHARCOAL = '#414042';
 
 const APP_BG =
   '#F5F5F7';
@@ -137,9 +143,11 @@ function SearchIcon() {
 function FixedHeader({
   name,
   onSearch,
+  onNotifications,
 }: {
   name: string;
   onSearch: () => void;
+  onNotifications: () => void;
 }) {
   return (
     <SafeAreaView
@@ -166,6 +174,13 @@ function FixedHeader({
           }
         />
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Notifications"
+          onPress={onNotifications} hitSlop={4}
+          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}>
+          <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
+            size={21} tintColor="#E4E4E7" />
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Search VoLTE Mobile"
@@ -183,6 +198,7 @@ function FixedHeader({
         >
           <SearchIcon />
         </Pressable>
+        </View>
       </View>
 
       <Text
@@ -209,8 +225,9 @@ function HeroSlide({
   const fallback =
     promotion === null;
 
+  const [imageFailed, setImageFailed] = useState(false);
   const imageSource =
-    promotion?.imageUrl
+    promotion?.imageUrl && !imageFailed
       ? {
           uri:
             promotion.imageUrl,
@@ -219,8 +236,10 @@ function HeroSlide({
           '../../../assets/brand/volte-mobile-home-hero.png',
         );
 
+  const sponsored = promotion?.eyebrow?.trim().toLowerCase() === 'sponsored';
+
   const eyebrow =
-    promotion?.eyebrow ||
+    (sponsored ? 'Sponsored' : promotion?.eyebrow) ||
     'POWERING EVERY CONNECTION!';
 
   const description =
@@ -242,6 +261,7 @@ function HeroSlide({
       source={
         imageSource
       }
+      onError={promotion?.imageUrl && !imageFailed ? () => setImageFailed(true) : undefined}
       resizeMode="cover"
       imageStyle={
         styles.heroImage
@@ -311,7 +331,7 @@ function HeroSlide({
           {description}
         </Text>
 
-        {ctaLabel &&
+        {!sponsored && ctaLabel &&
         ctaUrl ? (
           <Pressable
             accessibilityRole="button"
@@ -376,8 +396,8 @@ function Hero() {
     setPromotions,
   ] =
     useState<
-      CustomerPromotion[]
-    >([]);
+      CustomerPromotion[] | null
+    >(null);
 
   const [
     activeIndex,
@@ -426,9 +446,7 @@ function Hero() {
     };
   }, []);
 
-  const hasPromotions =
-    promotions.length >
-    0;
+  const promotionCount = promotions?.length ?? 0;
 
   return (
     <View
@@ -436,15 +454,16 @@ function Hero() {
         styles.heroZone
       }
     >
+      <View pointerEvents="none" style={styles.heroBackdrop} />
       <ScrollView
         horizontal
         pagingEnabled
         bounces={
-          promotions.length >
+          promotionCount >
           1
         }
         scrollEnabled={
-          promotions.length >
+          promotionCount >
           1
         }
         showsHorizontalScrollIndicator={
@@ -457,7 +476,7 @@ function Hero() {
           event,
         ) => {
           if (
-            promotions.length <=
+            promotionCount <=
             1
           ) {
             return;
@@ -477,14 +496,16 @@ function Hero() {
               0,
               Math.min(
                 nextIndex,
-                promotions.length -
+                promotionCount -
                   1,
               ),
             ),
           );
         }}
       >
-        {hasPromotions
+        {promotions === null ? (
+          <View style={[styles.heroCard, { width: slideWidth }]} />
+        ) : promotionCount > 0
           ? promotions.map(
               (
                 promotion,
@@ -514,7 +535,7 @@ function Hero() {
             )}
       </ScrollView>
 
-      {promotions.length >
+      {promotions && promotionCount >
       1 ? (
         <View
           style={
@@ -848,6 +869,7 @@ function OffersPreview({
 }
 
 export default function HomeScreen() {
+  const pathname = usePathname();
   const router =
     useRouter();
 
@@ -927,8 +949,10 @@ export default function HomeScreen() {
         styles.screen
       }
     >
+      {pathname === '/home' && <StatusBar style="light" />}
       <FixedHeader
         name={name}
+        onNotifications={() => router.navigate('/notifications')}
         onSearch={() =>
           router.navigate(
             '/search',
@@ -988,7 +1012,7 @@ const styles =
 
     headerSafe: {
       backgroundColor:
-        SURFACE,
+        CHARCOAL,
       paddingBottom: 10,
     },
 
@@ -1006,6 +1030,14 @@ const styles =
     brandIcon: {
       width: 22,
       height: 24,
+    },
+
+    notificationButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     searchButton: {
@@ -1062,7 +1094,7 @@ const styles =
       paddingHorizontal: 20,
       paddingTop: 4,
       color:
-        INK,
+        SURFACE,
       fontSize: 28,
       lineHeight: 34,
       fontWeight:
@@ -1087,6 +1119,11 @@ const styles =
       paddingTop: 6,
       backgroundColor:
         APP_BG,
+    },
+
+    heroBackdrop: {
+      position: 'absolute', top: 0, left: 0, right: 0,
+      height: 82, backgroundColor: CHARCOAL,
     },
 
     heroCarousel: {

@@ -50,6 +50,7 @@ export function getSupabaseClient() {
     anonKey,
     {
       auth: {
+        experimental: { passkey: true },
         storage:
           authSessionStorage,
 

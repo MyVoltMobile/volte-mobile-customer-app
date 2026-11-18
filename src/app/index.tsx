@@ -1,3 +1,9 @@
+import { hasAndroidPasskey, signInWithAndroidPasskey } from '@/lib/auth/android-passkey';
+import { Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useWelcomeImage } from '@/lib/customer/use-welcome-image';
+import { SymbolView } from 'expo-symbols';
+
 import {
   Redirect,
   useRouter,
@@ -28,18 +34,27 @@ import {
   useCustomerSession,
 } from '@/lib/customer/customer-session-provider';
 
-const LOGIN_HERO = require(
-  '../../assets/brand/volte-mobile-login-hero.png',
-);
-
 const MAGENTA = '#F5007E';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const welcomeImage = useWelcomeImage();
 
   const {
-    status,
+    status, verifyCustomerSession,
   } = useCustomerSession();
+
+  const [passkeyReady, setPasskeyReady] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') return;
+    let active = true;
+    void hasAndroidPasskey().then((ready) => {
+      if (active) setPasskeyReady(ready);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [status]);
 
   if (
     status === 'authenticated'
@@ -54,7 +69,7 @@ export default function WelcomeScreen() {
       <StatusBar style="light" />
 
       <ImageBackground
-        source={LOGIN_HERO}
+        {...welcomeImage}
         resizeMode="cover"
         style={styles.background}
       >
@@ -103,6 +118,20 @@ export default function WelcomeScreen() {
                     Sign in
                   </Text>
                 </Pressable>
+
+                {passkeyReady && (
+                  <Pressable accessibilityRole="button" disabled={signingIn}
+                    style={styles.secondaryButton} onPress={() => {
+                      setSigningIn(true);
+                      void signInWithAndroidPasskey()
+                        .then((session) => verifyCustomerSession(session))
+                        .catch(() => Alert.alert('Fingerprint sign-in unavailable', 'Try again or sign in by email.'))
+                        .finally(() => setSigningIn(false));
+                    }}>
+                    <SymbolView name={{ ios: 'touchid', android: 'fingerprint' }} size={22} tintColor="#20232A" />
+                    <Text style={styles.secondaryButtonText}>Sign in with fingerprint</Text>
+                  </Pressable>
+                )}
 
                 <Pressable
                   accessibilityRole="button"
@@ -201,6 +230,8 @@ const styles = StyleSheet.create({
   },
 
   secondaryButton: {
+    flexDirection: 'row',
+    gap: 8,
     width: '100%',
     minHeight: 58,
     borderRadius: 32,
