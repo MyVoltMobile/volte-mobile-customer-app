@@ -44,12 +44,16 @@ export async function enrollAndroidPasskey() {
     await SecureStore.setItemAsync(enrolledKey, 'yes');
     return { message: 'Fingerprint sign-in is ready.' };
   } catch (error: unknown) {
-    const code = typeof error === 'object' && error !== null && 'code' in error
-      ? error.code
-      : undefined;
-    // Only show a structured code. Native error messages may include credential data.
-    const detail = typeof code === 'string' && /^[a-z][a-z0-9_]{1,63}$/i.test(code)
-      ? ` [${code}]`
+    const fields = typeof error === 'object' && error !== null
+      ? error as { code?: unknown; error?: unknown; message?: unknown }
+      : {};
+    const code = stage === 'create' ? fields.error ?? fields.code : fields.code;
+    const invalidRp = stage === 'create' && typeof fields.message === 'string'
+      && /(?:rp id|relying party id).*(?:validat|invalid)/i.test(fields.message);
+    // Expose diagnostic categories without displaying the provider's raw message.
+    const detail = invalidRp ? ' [RelyingPartyIdValidationFailed]'
+      : typeof code === 'string' && /^[a-z][a-z0-9_]{1,63}$/i.test(code) ? ` [${code}]`
+      : stage === 'create' ? (code === 'Native error' ? ' [NativeError]' : ' [UnknownError]')
       : '';
     return { message: setupMessages[stage] + detail };
   }

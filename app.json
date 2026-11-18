@@ -20,7 +20,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.voltemobile.app",
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "output": "static",
@@ -39,7 +39,13 @@
       ],
       "expo-secure-store",
       "expo-video",
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/volte-mobile-notification.png",
+          "color": "#B41D70"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

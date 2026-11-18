@@ -1,3 +1,4 @@
+import { useUnreadCustomerNotifications } from '@/lib/customer/customer-notifications';
 import { SymbolView } from 'expo-symbols';
 import {
   useRouter,
@@ -144,10 +145,12 @@ function FixedHeader({
   name,
   onSearch,
   onNotifications,
+  hasUnread,
 }: {
   name: string;
   onSearch: () => void;
   onNotifications: () => void;
+  hasUnread: boolean;
 }) {
   return (
     <SafeAreaView
@@ -175,11 +178,12 @@ function FixedHeader({
         />
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Notifications"
+        <Pressable accessibilityRole="button" accessibilityLabel={hasUnread ? "Notifications, unread messages" : "Notifications"}
           onPress={onNotifications} hitSlop={4}
           style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}>
           <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
             size={21} tintColor="#E4E4E7" />
+          {hasUnread && <View style={styles.unreadDot} />}
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -869,6 +873,7 @@ function OffersPreview({
 }
 
 export default function HomeScreen() {
+  const hasUnread = useUnreadCustomerNotifications();
   const pathname = usePathname();
   const router =
     useRouter();
@@ -952,6 +957,7 @@ export default function HomeScreen() {
       {pathname === '/home' && <StatusBar style="light" />}
       <FixedHeader
         name={name}
+        hasUnread={hasUnread}
         onNotifications={() => router.navigate('/notifications')}
         onSearch={() =>
           router.navigate(
@@ -1030,6 +1036,18 @@ const styles =
     brandIcon: {
       width: 22,
       height: 24,
+    },
+
+    unreadDot: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: '#FFFFFF',
+      backgroundColor: '#E52C8D',
     },
 
     notificationButton: {

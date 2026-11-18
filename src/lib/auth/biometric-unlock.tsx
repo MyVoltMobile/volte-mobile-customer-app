@@ -127,7 +127,7 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
       {state === 'checking' ? <ActivityIndicator color="#FFFFFF" /> : (
         <View style={styles.card}>
           <Image
-            source={require('../../../assets/brand/volte-mobile-icon.png')}
+            source={require('../../../assets/brand/volte-mobile-icon-on-white.png')}
             style={styles.logo}
             resizeMode="contain"
           />

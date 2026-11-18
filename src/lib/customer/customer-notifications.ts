@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
-import { useRouter } from 'expo-router';
-import { Platform } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { AppState, Platform } from 'react-native';
 import { authenticatedCustomerFetch } from '@/lib/customer/customer-api';
 
 export const notificationChannel = 'customer-updates';
@@ -16,6 +16,51 @@ export async function notificationRequest(path = '', body?: object) {
   const result = await response.json().catch(() => null);
   if (!response.ok || !result) throw new Error(result?.error ?? 'Notifications are temporarily unavailable.');
   return result;
+}
+
+export function useUnreadCustomerNotifications() {
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    let current = true;
+    let revision = 0;
+
+    async function refresh() {
+      if (AppState.currentState === 'background') return;
+      const request = ++revision;
+      try {
+        for (let page = 0; current && request === revision; page += 1) {
+          const result = await notificationRequest('?page=' + page);
+          if (!current || request !== revision || !Array.isArray(result.notifications)) return;
+
+          const unread = result.notifications.some((message: { read_at?: string | null }) =>
+            message.read_at === null);
+          if (unread || result.hasMore !== true || result.notifications.length === 0) {
+            setHasUnread(unread);
+            return;
+          }
+        }
+      } catch {
+        // Retain the last known indicator when the inbox is temporarily unavailable.
+      }
+    }
+
+    void refresh();
+    const push = Notifications.addNotificationReceivedListener(() => { void refresh(); });
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void refresh();
+    });
+    const interval = setInterval(() => { void refresh(); }, 60000);
+
+    return () => {
+      current = false;
+      push.remove();
+      appState.remove();
+      clearInterval(interval);
+    };
+  }, []));
+
+  return hasUnread;
 }
 
 export async function enableCustomerAlerts() {
