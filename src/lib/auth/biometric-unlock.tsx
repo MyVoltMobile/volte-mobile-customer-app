@@ -1,8 +1,12 @@
+import { SymbolView } from 'expo-symbols';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useWelcomeImage } from '@/lib/customer/use-welcome-image';
 import { enrollAndroidPasskey } from './android-passkey';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { ActivityIndicator, Alert, Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ImageBackground, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { getSupabaseClient } from '@/lib/auth/supabase';
 
@@ -74,6 +78,7 @@ export function BiometricSettings({ customerId }: { customerId: string }) {
 }
 
 export function BiometricGate({ customerId, children }: { customerId: string; children: ReactNode }) {
+  const welcomeImage = useWelcomeImage();
   const [state, setState] = useState<'checking' | 'locked' | 'open'>('checking');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -114,8 +119,12 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
   }
 
   return (
-    <View style={styles.screen}>
-      {state === 'checking' ? <ActivityIndicator /> : (
+    <ImageBackground {...welcomeImage} resizeMode="cover" style={styles.screen}>
+      <StatusBar style="light" />
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.scrim]} />
+      <SafeAreaView style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.unlockContent} bounces={false}>
+      {state === 'checking' ? <ActivityIndicator color="#FFFFFF" /> : (
         <View style={styles.card}>
           <Image
             source={require('../../../assets/brand/volte-mobile-icon.png')}
@@ -124,7 +133,9 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
           />
           <Text accessibilityRole="header" style={styles.title}>Unlock VoLTE Mobile</Text>
           <Text style={styles.description}>Use your fingerprint to return to your account.</Text>
-          <Button label="Unlock with fingerprint" disabled={busy} onPress={() => void act(false)} />
+          <Button label="Unlock with fingerprint" disabled={busy}
+            icon={<SymbolView name={{ android: 'fingerprint' }} size={23} tintColor="#FFFFFF" />}
+            onPress={() => void act(false)} />
           <Button label="Sign in by email" variant="secondary" disabled={busy} onPress={() => {
             Alert.alert('Sign in by email?', 'This resets fingerprint unlock on this device.', [
               { text: 'Cancel', style: 'cancel' },
@@ -134,12 +145,16 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
           {!!message && <Text accessibilityLiveRegion="polite">{message}</Text>}
         </View>
       )}
-    </View>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#F5F5F7' },
+  screen: { flex: 1 },
+  scrim: { backgroundColor: 'rgba(11, 12, 18, 0.26)' },
+  unlockContent: { flexGrow: 1, justifyContent: 'flex-end', padding: 20 },
   actions: { gap: 12 },
   card: {
     alignSelf: 'center',

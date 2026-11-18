@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import {
   useRouter,
   usePathname,
@@ -173,10 +174,12 @@ function FixedHeader({
           }
         />
 
-        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Notifications"
-          onPress={onNotifications} style={styles.searchButton}>
-          <Text style={{ fontSize: 21 }}>🔔</Text>
+          onPress={onNotifications} hitSlop={4}
+          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}>
+          <SymbolView name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
+            size={21} tintColor="#E4E4E7" />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -1025,6 +1028,14 @@ const styles =
     brandIcon: {
       width: 22,
       height: 24,
+    },
+
+    notificationButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     searchButton: {
