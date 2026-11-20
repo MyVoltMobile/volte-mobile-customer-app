@@ -223,6 +223,7 @@ export default function AuthCallbackScreen() {
         try {
           await verifyCustomerSession(
             data.session,
+            'email-link',
           );
         } catch {
           if (!active) {

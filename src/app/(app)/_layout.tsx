@@ -46,6 +46,7 @@ export default function CustomerAppLayout() {
   const {
     status,
     customer,
+    freshlyVerifiedByEmail,
   } =
     useCustomerSession();
 
@@ -92,7 +93,7 @@ export default function CustomerAppLayout() {
   }
 
   return (
-    <BiometricGate key={customer.id} customerId={customer.id}>
+    <BiometricGate key={customer.id} customerId={customer.id} freshlyVerifiedByEmail={freshlyVerifiedByEmail}>
     <CustomerNotificationAlerts />
     <Tabs
       initialRouteName="home"

@@ -77,7 +77,11 @@ export function BiometricSettings({ customerId }: { customerId: string }) {
   );
 }
 
-export function BiometricGate({ customerId, children }: { customerId: string; children: ReactNode }) {
+export function BiometricGate({ customerId, freshlyVerifiedByEmail, children }: {
+  customerId: string;
+  freshlyVerifiedByEmail: boolean;
+  children: ReactNode;
+}) {
   const welcomeImage = useWelcomeImage();
   const [state, setState] = useState<'checking' | 'locked' | 'open'>('checking');
   const [busy, setBusy] = useState(false);
@@ -87,13 +91,17 @@ export function BiometricGate({ customerId, children }: { customerId: string; ch
   useEffect(() => {
     let active = true;
     if (Platform.OS !== 'android') return;
+    if (freshlyVerifiedByEmail) {
+      setState('open');
+      return;
+    }
     SecureStore.getItemAsync(key(customerId))
       .then((value) => { if (active) setState(value === 'enabled' ? 'locked' : 'open'); })
       .catch(() => { if (active) setState('locked'); });
     return () => { active = false; };
-  }, [customerId]);
+  }, [customerId, freshlyVerifiedByEmail]);
 
-  if (Platform.OS !== 'android' || state === 'open') return <>{children}</>;
+  if (Platform.OS !== 'android' || freshlyVerifiedByEmail || state === 'open') return <>{children}</>;
 
   async function act(useEmail: boolean) {
     if (running.current) return;

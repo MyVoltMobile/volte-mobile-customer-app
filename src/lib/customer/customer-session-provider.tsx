@@ -35,8 +35,10 @@ export type CustomerSessionStatus =
 type CustomerSessionContextValue = {
   status: CustomerSessionStatus;
   customer: CustomerSessionProfile | null;
+  freshlyVerifiedByEmail: boolean;
   verifyCustomerSession: (
     session: Session,
+    method?: 'email-link',
   ) => Promise<CustomerSessionResult>;
 };
 
@@ -60,6 +62,8 @@ export function CustomerSessionProvider({
       CustomerSessionProfile | null
     >(null);
 
+  const [freshlyVerifiedByEmail, setFreshlyVerifiedByEmail] = useState(false);
+
   const mounted =
     useRef(false);
 
@@ -75,6 +79,7 @@ export function CustomerSessionProvider({
       }
 
       setCustomer(null);
+      setFreshlyVerifiedByEmail(false);
       setStatus('signed-out');
     }, []);
 
@@ -82,12 +87,14 @@ export function CustomerSessionProvider({
     useCallback(
       async (
         session: Session,
+        method?: 'email-link',
       ): Promise<CustomerSessionResult> => {
         const requestId =
           ++requestSequence.current;
 
         if (mounted.current) {
           setCustomer(null);
+          setFreshlyVerifiedByEmail(false);
           setStatus('loading');
         }
 
@@ -106,6 +113,7 @@ export function CustomerSessionProvider({
               result.customer,
             );
 
+            setFreshlyVerifiedByEmail(method === 'email-link');
             setStatus(
               'authenticated',
             );
@@ -280,11 +288,13 @@ export function CustomerSessionProvider({
       () => ({
         status,
         customer,
+        freshlyVerifiedByEmail,
         verifyCustomerSession,
       }),
       [
         status,
         customer,
+        freshlyVerifiedByEmail,
         verifyCustomerSession,
       ],
     );

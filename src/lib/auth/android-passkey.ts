@@ -20,6 +20,7 @@ const setupMessages = {
 
 export async function enrollAndroidPasskey() {
   let stage: keyof typeof setupMessages = 'unavailable';
+  let relyingPartyId: string | undefined;
   try {
     if (Platform.OS !== 'android' || !Passkey.isSupported()) {
       throw new Error();
@@ -31,7 +32,9 @@ export async function enrollAndroidPasskey() {
     if (error || !data) throw error ?? new Error();
 
     stage = 'create';
-    const credential = await Passkey.create(data.options as Parameters<typeof Passkey.create>[0]);
+    const options = data.options as Parameters<typeof Passkey.create>[0];
+    relyingPartyId = options.rp?.id;
+    const credential = await Passkey.create(options);
 
     stage = 'verify';
     const result = await api.verifyRegistration({
@@ -55,7 +58,11 @@ export async function enrollAndroidPasskey() {
       : typeof code === 'string' && /^[a-z][a-z0-9_]{1,63}$/i.test(code) ? ` [${code}]`
       : stage === 'create' ? (code === 'Native error' ? ' [NativeError]' : ' [UnknownError]')
       : '';
-    return { message: setupMessages[stage] + detail };
+    const domain = invalidRp && typeof relyingPartyId === 'string'
+      && /^(?=.{1,253}$)[a-z0-9-]+(?:\.[a-z0-9-]+)+$/i.test(relyingPartyId)
+      ? ` Domain: ${relyingPartyId}.`
+      : '';
+    return { message: setupMessages[stage] + detail + domain };
   }
 }
 
