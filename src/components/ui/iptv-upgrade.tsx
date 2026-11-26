@@ -57,7 +57,7 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
-  const lastStatus = useRef<UpgradeStatus['status']>();
+  const lastStatus = useRef<UpgradeStatus['status'] | null>(null);
 
   useEffect(() => {
     let active = true;
