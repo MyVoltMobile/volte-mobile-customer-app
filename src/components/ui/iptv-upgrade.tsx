@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,7 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
   const [status, setStatus] = useState<UpgradeStatus | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const pending = useRef(false);
   const lastStatus = useRef<UpgradeStatus['status'] | null>(null);
 
@@ -143,12 +144,27 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
         {!tracking && !review ? (
           <>
             <Button label={expanded ? 'Hide plans' : 'See upgrade options'}
-              variant="secondary" disabled={busy} onPress={() => setExpanded(!expanded)} />
-            {expanded && options.map(option => (
-              <Button key={option.subscriptionId + option.packageId}
-                label={option.currentPlanName + ' → ' + option.planName}
-                variant="secondary" disabled={busy} onPress={() => void run(() => choose(option))} />
-            ))}
+              variant="secondary" disabled={busy && !selectedPlan} onPress={() => { if (!pending.current) setExpanded(!expanded); }} />
+            {expanded && options.map(option => {
+              const key = option.subscriptionId + ':' + option.packageId;
+              const selected = selectedPlan === key;
+              return (
+                <Pressable key={key} accessibilityRole="button"
+                  accessibilityState={{ selected, disabled: busy, busy: selected && busy }}
+                  disabled={busy} style={[styles.plan, selected && styles.selectedPlan]}
+                  onPress={() => void run(async () => {
+                    setSelectedPlan(key);
+                    await choose(option);
+                  })}>
+                  <View style={styles.planCopy}>
+                    <Text style={styles.planName}>{option.planName}</Text>
+                    <Text style={styles.planDetail}>From {option.currentPlanName}</Text>
+                  </View>
+                  {selected && busy ? <ActivityIndicator color="#ad155d" /> :
+                    <Text style={styles.chevron} importantForAccessibility="no">›</Text>}
+                </Pressable>
+              );
+            })}
           </>
         ) : null}
         {review ? (
@@ -161,7 +177,7 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
             <Text accessibilityRole="header" style={styles.heading}>{review.agreement.title}</Text>
             <Text selectable>{review.agreement.text}</Text>
             <Button label="Accept and continue to payment" disabled={busy} onPress={() => void run(() => checkout(review))} />
-            <Button label="Back to plans" variant="secondary" disabled={busy} onPress={() => setReview(null)} />
+            <Button label="Back to plans" variant="secondary" disabled={busy} onPress={() => { setReview(null); setSelectedPlan(null); }} />
           </>
         ) : null}
         {tracking ? (
@@ -183,7 +199,7 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
             }} /> : null}
           </>
         ) : null}
-        {error ? <Text accessibilityLiveRegion="polite">{error}</Text> : null}
+        {error ? <Text style={styles.notice} accessibilityLiveRegion="polite">{error}</Text> : null}
       </View>
     </Card>
   );
@@ -191,5 +207,13 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
 
 const styles = StyleSheet.create({
   content: { gap: Spacing.md },
+  plan: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16,
+    padding: 14, backgroundColor: '#f7f6fa', borderWidth: 1, borderColor: '#e5e1ea' },
+  selectedPlan: { borderColor: '#ad155d', backgroundColor: '#fbf0f6' },
+  planCopy: { flex: 1, gap: 4 },
+  planName: { color: '#19151e', fontWeight: '700', fontSize: 16 },
+  planDetail: { color: '#60596c', fontSize: 13 },
+  chevron: { color: '#ad155d', fontSize: 24 },
+  notice: { backgroundColor: '#f7f6fa', color: '#413a4c', padding: 12, borderRadius: 12 },
   heading: { fontSize: 18, fontWeight: '600' },
 });
