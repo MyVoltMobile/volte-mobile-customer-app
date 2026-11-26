@@ -1,3 +1,4 @@
+import { IptvUpgrade } from '@/components/ui/iptv-upgrade';
 import { IptvChannelLineup } from '@/components/ui/iptv-channel-lineup';
 import * as WebBrowser from 'expo-web-browser';
 import { authenticatedCustomerFetch } from '@/lib/customer/customer-api';
@@ -335,6 +336,7 @@ export default function IptvScreen() {
           </View>
         </Card>
       ))}
+      <IptvUpgrade onActivated={() => { void load(); void loadRenewals(); }} />
       <IptvChannelLineup />
       {renewalError ? <Text accessibilityLiveRegion="polite" style={styles.helper}>{renewalError}</Text> : null}
       {state ===
