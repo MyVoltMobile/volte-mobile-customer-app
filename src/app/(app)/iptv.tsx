@@ -71,6 +71,7 @@ function formatDate(
           year: 'numeric',
           month: 'short',
           day: 'numeric',
+          timeZone: /^\d{4}-\d{2}-\d{2}$/.test(value) ? 'UTC' : undefined,
         },
       );
 }
