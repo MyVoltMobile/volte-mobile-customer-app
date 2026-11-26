@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Colors, Spacing } from '@/theme/tokens';
 
+const catalogue = 'https://portal.voltemobile.com/api/public';
 const storefront = 'https://voltemobile.com';
 const usageLevels = ['Light', 'Regular', 'Heavy'] as const;
 const activities = [
@@ -42,7 +43,7 @@ export function EsimPurchase({ onReturn }: { onReturn: () => void }) {
   useEffect(() => {
     const controller = new AbortController();
     setCatalogueError(false);
-    void fetch(storefront + '/api/esim/destinations', { signal: controller.signal })
+    void fetch(catalogue + '/esim-destinations', { signal: controller.signal })
       .then(async response => {
         const result = await response.json();
         if (!response.ok || !result.ok || !Array.isArray(result.destinations) || !result.destinations.length) throw new Error();
@@ -71,7 +72,7 @@ export function EsimPurchase({ onReturn }: { onReturn: () => void }) {
       const params = new URLSearchParams({
         country: destination.code, tripDays: String(days), dailyUsageGb: daily.toFixed(2),
       });
-      const response = await fetch(storefront + '/api/esim/plan-search?' + params);
+      const response = await fetch(catalogue + '/esim-plan-search?' + params);
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error();
       const offers = result.recommendations;
