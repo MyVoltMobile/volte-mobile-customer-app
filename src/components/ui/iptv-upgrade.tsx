@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ type Review = {
   agreement: { title: string; text: string; termsSha256: string };
 };
 type UpgradeStatus = {
+  quoteId?: string;
   status: 'ACTIVE' | 'ACTIVATING' | 'AWAITING_PAYMENT' | 'REVIEW_REQUIRED' | 'EXPIRED' | 'NOT_STARTED';
   service?: { package_name: string; username?: string; password?: string };
 };
@@ -64,7 +65,19 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
     void request<{ options: Option[] }>(root + '-quote').then(result => {
       if (active && Array.isArray(result.options)) setOptions(result.options);
     }).catch(() => {});
-    return () => { active = false; };
+    void request<UpgradeStatus>(root + '-status').then(result => {
+      if (active && !pending.current && result.quoteId && result.status !== 'NOT_STARTED') {
+        setTracking(result.quoteId);
+        setStatus(result);
+        lastStatus.current = result.status;
+      }
+    }).catch(() => {});
+    const listener = AppState.addEventListener('change', state => {
+      if (state !== 'active') {
+        setStatus(previous => previous?.service?.password ? { status: previous.status } : previous);
+      }
+    });
+    return () => { active = false; listener.remove(); };
   }, []);
 
   async function run(action: () => Promise<void>) {
@@ -88,6 +101,9 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
     setStatus(result);
     if (result.status === 'ACTIVE' && lastStatus.current !== 'ACTIVE') {
       setOptions([]);
+      void request<{ options: Option[] }>(root + '-quote').then(result => {
+        if (Array.isArray(result.options)) setOptions(result.options);
+      }).catch(() => {});
       onActivated();
     }
     lastStatus.current = result.status;
@@ -162,8 +178,8 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
                 variant="secondary" disabled={busy}
                 onPress={() => void run(() => checkStatus(tracking, status?.status === 'ACTIVE'))} />
             )}
-            {status?.status === 'EXPIRED' ? <Button label="Choose a plan" variant="secondary" onPress={() => {
-              setTracking(null); setStatus(null);
+            {(status?.status === 'EXPIRED' || (status?.status === 'ACTIVE' && options.length > 0)) ? <Button label="Choose a plan" variant="secondary" disabled={busy} onPress={() => {
+              setTracking(null); setStatus(null); lastStatus.current = null; setExpanded(true);
             }} /> : null}
           </>
         ) : null}
