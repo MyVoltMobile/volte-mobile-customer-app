@@ -1,3 +1,4 @@
+import { SlideToConfirm } from '@/components/ui/slide-to-confirm';
 import { IptvUpgrade } from '@/components/ui/iptv-upgrade';
 import { IptvChannelLineup } from '@/components/ui/iptv-channel-lineup';
 import * as WebBrowser from 'expo-web-browser';
@@ -11,9 +12,6 @@ import {
 
 import {
   ActivityIndicator,
-  Alert,
-  Animated,
-  PanResponder,
   AppState,
   Linking,
   Pressable,
@@ -78,63 +76,6 @@ function formatDate(
         },
       );
 }
-
-function RenewalSlider({ early, busy, onConfirm }: {
-  early: boolean;
-  busy: boolean;
-  onConfirm: () => void;
-}) {
-  const [width, setWidth] = useState(0);
-  const offset = useRef(new Animated.Value(0)).current;
-  const travel = Math.max(0, width - 56);
-  const label = early ? 'Slide to renew early' : 'Slide to pay renewal';
-  const reset = () => Animated.spring(offset, {
-    toValue: 0, useNativeDriver: true, overshootClamping: true,
-  }).start();
-  const gesture = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, { dx, dy }) =>
-      !busy && travel > 0 && dx > 6 && dx > Math.abs(dy),
-    onPanResponderMove: (_, { dx }) => offset.setValue(Math.min(travel, Math.max(0, dx))),
-    onPanResponderRelease: (_, { dx }) => {
-      reset();
-      if (!busy && travel > 0 && dx >= travel * 0.9) onConfirm();
-    },
-    onPanResponderTerminate: reset,
-  });
-
-  return (
-    <View style={[renewalStyles.track, early && renewalStyles.earlyTrack]}
-      onLayout={event => setWidth(event.nativeEvent.layout.width)}
-      accessible accessibilityRole="button" accessibilityLabel={label}
-      accessibilityHint="Opens a confirmation before going to Scotia"
-      accessibilityState={{ busy, disabled: busy }}
-      accessibilityActions={[{ name: 'activate' }]}
-      onAccessibilityAction={event => {
-        if (busy || event.nativeEvent.actionName !== 'activate') return;
-        Alert.alert(early ? 'Renew early?' : 'Pay renewal?',
-          'Continue to Scotia to pay for your IPTV renewal.',
-          [{ text: 'Cancel', style: 'cancel' }, { text: 'Continue', onPress: onConfirm }]);
-      }}>
-      <Text style={renewalStyles.trackLabel}>{busy ? 'Opening checkout…' : label}</Text>
-      <Animated.View {...gesture.panHandlers}
-        style={[renewalStyles.thumb, { transform: [{ translateX: offset }] }]}>
-        <Text style={renewalStyles.arrow}>›</Text>
-      </Animated.View>
-    </View>
-  );
-}
-
-const renewalStyles = StyleSheet.create({
-  upcoming: { color: '#4e465a', fontWeight: '700' },
-  track: { minHeight: 56, paddingVertical: 14, paddingLeft: 62, paddingRight: 14,
-    justifyContent: 'center', borderRadius: 28, backgroundColor: '#fbe8f2',
-    borderWidth: 1, borderColor: '#ebcede' },
-  earlyTrack: { backgroundColor: '#f7f6fa', borderColor: '#e5e1ea' },
-  trackLabel: { color: '#413a4c', fontWeight: '700', textAlign: 'center' },
-  thumb: { position: 'absolute', left: 4, top: 4, bottom: 4, width: 46,
-    alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: '#ad155d' },
-  arrow: { color: '#fff', fontSize: 28, lineHeight: 30 },
-});
 
 function Detail({
   label,
@@ -393,10 +334,13 @@ export default function IptvScreen() {
           <Card key={renewal.subscriptionId}>
             <View style={styles.card}>
               <Text style={styles.title}>{renewal.serviceName} renewal</Text>
-              {early ? <Text style={renewalStyles.upcoming}>Upcoming · No payment due yet</Text> : null}
+              {early ? <Text style={styles.upcoming}>Upcoming · No payment due yet</Text> : null}
               <Detail label="Renewal amount" value={`J$${(renewal.amountCents / 100).toFixed(2)}`} />
               <Detail label="Next renewal" value={formatDate(renewal.renewalDate)} />
-              <RenewalSlider early={early} busy={paying}
+              <SlideToConfirm muted={early} busy={paying}
+                label={early ? 'Slide to renew early' : 'Slide to pay renewal'}
+                confirmationTitle={early ? 'Renew early?' : 'Pay renewal?'}
+                confirmationMessage="Continue to Scotia to pay for your IPTV renewal."
                 onConfirm={() => void payRenewal(renewal.subscriptionId)} />
             </View>
           </Card>
@@ -546,6 +490,7 @@ export default function IptvScreen() {
 
 const styles =
   StyleSheet.create({
+    upcoming: { color: '#4e465a', fontWeight: '700' },
     list: {
       gap:
         Spacing.md,
