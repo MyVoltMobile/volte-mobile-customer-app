@@ -11,6 +11,9 @@ import {
 
 import {
   ActivityIndicator,
+  Alert,
+  Animated,
+  PanResponder,
   AppState,
   Linking,
   Pressable,
@@ -75,6 +78,63 @@ function formatDate(
         },
       );
 }
+
+function RenewalSlider({ early, busy, onConfirm }: {
+  early: boolean;
+  busy: boolean;
+  onConfirm: () => void;
+}) {
+  const [width, setWidth] = useState(0);
+  const offset = useRef(new Animated.Value(0)).current;
+  const travel = Math.max(0, width - 56);
+  const label = early ? 'Slide to renew early' : 'Slide to pay renewal';
+  const reset = () => Animated.spring(offset, {
+    toValue: 0, useNativeDriver: true, overshootClamping: true,
+  }).start();
+  const gesture = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+      !busy && travel > 0 && dx > 6 && dx > Math.abs(dy),
+    onPanResponderMove: (_, { dx }) => offset.setValue(Math.min(travel, Math.max(0, dx))),
+    onPanResponderRelease: (_, { dx }) => {
+      reset();
+      if (!busy && travel > 0 && dx >= travel * 0.9) onConfirm();
+    },
+    onPanResponderTerminate: reset,
+  });
+
+  return (
+    <View style={[renewalStyles.track, early && renewalStyles.earlyTrack]}
+      onLayout={event => setWidth(event.nativeEvent.layout.width)}
+      accessible accessibilityRole="button" accessibilityLabel={label}
+      accessibilityHint="Opens a confirmation before going to Scotia"
+      accessibilityState={{ busy, disabled: busy }}
+      accessibilityActions={[{ name: 'activate' }]}
+      onAccessibilityAction={event => {
+        if (busy || event.nativeEvent.actionName !== 'activate') return;
+        Alert.alert(early ? 'Renew early?' : 'Pay renewal?',
+          'Continue to Scotia to pay for your IPTV renewal.',
+          [{ text: 'Cancel', style: 'cancel' }, { text: 'Continue', onPress: onConfirm }]);
+      }}>
+      <Text style={renewalStyles.trackLabel}>{busy ? 'Opening checkout…' : label}</Text>
+      <Animated.View {...gesture.panHandlers}
+        style={[renewalStyles.thumb, { transform: [{ translateX: offset }] }]}>
+        <Text style={renewalStyles.arrow}>›</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+const renewalStyles = StyleSheet.create({
+  upcoming: { color: '#4e465a', fontWeight: '700' },
+  track: { minHeight: 56, paddingVertical: 14, paddingLeft: 62, paddingRight: 14,
+    justifyContent: 'center', borderRadius: 28, backgroundColor: '#fbe8f2',
+    borderWidth: 1, borderColor: '#ebcede' },
+  earlyTrack: { backgroundColor: '#f7f6fa', borderColor: '#e5e1ea' },
+  trackLabel: { color: '#413a4c', fontWeight: '700', textAlign: 'center' },
+  thumb: { position: 'absolute', left: 4, top: 4, bottom: 4, width: 46,
+    alignItems: 'center', justifyContent: 'center', borderRadius: 23, backgroundColor: '#ad155d' },
+  arrow: { color: '#fff', fontSize: 28, lineHeight: 30 },
+});
 
 function Detail({
   label,
@@ -325,18 +385,23 @@ export default function IptvScreen() {
       title="My IPTV"
       description="Your VoLTE Mobile entertainment service."
     >
-      {renewals.map((renewal) => (
-        <Card key={renewal.subscriptionId}>
-          <View style={styles.card}>
-            <Text style={styles.title}>{renewal.serviceName} renewal</Text>
-            <Detail label="Amount" value={`J${(renewal.amountCents / 100).toFixed(2)}`} />
-            <Detail label="Renewal date" value={formatDate(renewal.renewalDate)} />
-            <Pressable accessibilityRole="button" disabled={paying} onPress={() => void payRenewal(renewal.subscriptionId)} style={styles.retry}>
-              <Text style={styles.retryText}>{paying ? 'Opening checkout…' : 'Pay renewal'}</Text>
-            </Pressable>
-          </View>
-        </Card>
-      ))}
+      {renewals.map((renewal) => {
+        const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Jamaica',
+          year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+        const early = /^\d{4}-\d{2}-\d{2}$/.test(renewal.renewalDate) && renewal.renewalDate > today;
+        return (
+          <Card key={renewal.subscriptionId}>
+            <View style={styles.card}>
+              <Text style={styles.title}>{renewal.serviceName} renewal</Text>
+              {early ? <Text style={renewalStyles.upcoming}>Upcoming · No payment due yet</Text> : null}
+              <Detail label="Renewal amount" value={`J$${(renewal.amountCents / 100).toFixed(2)}`} />
+              <Detail label="Next renewal" value={formatDate(renewal.renewalDate)} />
+              <RenewalSlider early={early} busy={paying}
+                onConfirm={() => void payRenewal(renewal.subscriptionId)} />
+            </View>
+          </Card>
+        );
+      })}
       <IptvUpgrade onActivated={() => { void load(); void loadRenewals(); }} />
       <IptvChannelLineup />
       {renewalError ? <Text accessibilityLiveRegion="polite" style={styles.helper}>{renewalError}</Text> : null}
