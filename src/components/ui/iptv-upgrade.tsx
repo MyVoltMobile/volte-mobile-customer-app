@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 import { Button } from '@/components/ui/button';
+import { SlideToConfirm } from '@/components/ui/slide-to-confirm';
 import { Card } from '@/components/ui/card';
 import { authenticatedCustomerFetch } from '@/lib/customer/customer-api';
 import { Spacing } from '@/theme/tokens';
@@ -169,14 +170,37 @@ export function IptvUpgrade({ onActivated }: { onActivated: () => void }) {
         ) : null}
         {review ? (
           <>
-            <Text style={styles.heading}>{review.offer.packageName}</Text>
-            <Text>Due today {amounts.format(review.offer.amountDueCents / 100)}</Text>
-            <Text>Unused-time credit {amounts.format(review.offer.unusedCreditCents / 100)}</Text>
-            <Text>New monthly price {amounts.format(review.offer.unitPrice)}</Text>
-            <Text>Your new billing cycle starts when the plan activates.</Text>
+            <View style={styles.summary}>
+              <Text style={styles.heading}>{review.offer.packageName}</Text>
+              {[
+                ['Due today', review.offer.amountDueCents / 100],
+                ['Unused-time credit', review.offer.unusedCreditCents / 100],
+                ['New monthly price', review.offer.unitPrice],
+              ].map(([label, amount]) => (
+                <View key={label} style={styles.amountRow}>
+                  <Text style={styles.amountLabel}>{label}</Text>
+                  <Text style={label === 'Due today' ? styles.dueAmount : styles.amountValue}>
+                    {amounts.format(Number(amount))}
+                  </Text>
+                </View>
+              ))}
+              <Text style={styles.planDetail}>Your new billing cycle starts when the plan activates.</Text>
+            </View>
             <Text accessibilityRole="header" style={styles.heading}>{review.agreement.title}</Text>
-            <Text selectable>{review.agreement.text}</Text>
-            <Button label="Accept and continue to payment" disabled={busy} onPress={() => void run(() => checkout(review))} />
+            <Text style={styles.planDetail}>Scroll inside the panel to review the full terms.</Text>
+            <View style={styles.agreement}>
+              <ScrollView nestedScrollEnabled persistentScrollbar style={styles.agreementScroll}
+                contentContainerStyle={styles.agreementContent}>
+                {review.agreement.text.split(/(^(?:SECTION\s+\d+[^\n]*)$)/gim).map((part, index) =>
+                  part ? <Text key={index} selectable
+                    style={index % 2 ? styles.sectionTitle : styles.agreementText}>{part}</Text> : null)}
+              </ScrollView>
+            </View>
+            <Text style={styles.planDetail}>Sliding accepts the agreement and continues to Scotia for payment.</Text>
+            <SlideToConfirm label="Slide to accept" busy={busy}
+              confirmationTitle="Accept the IPTV agreement?"
+              confirmationMessage="Accept the agreement and continue to Scotia for payment."
+              onConfirm={() => void run(() => checkout(review))} />
             <Button label="Back to plans" variant="secondary" disabled={busy} onPress={() => { setReview(null); setSelectedPlan(null); }} />
           </>
         ) : null}
@@ -215,5 +239,15 @@ const styles = StyleSheet.create({
   planDetail: { color: '#60596c', fontSize: 13 },
   chevron: { color: '#ad155d', fontSize: 24 },
   notice: { backgroundColor: '#f7f6fa', color: '#413a4c', padding: 12, borderRadius: 12 },
+  summary: { gap: 12, padding: 14, borderRadius: 16, backgroundColor: '#f7f6fa' },
+  amountRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
+  amountLabel: { color: '#60596c', flexShrink: 1 },
+  amountValue: { color: '#19151e', fontWeight: '600' },
+  dueAmount: { color: '#9c1558', fontWeight: '700' },
+  agreement: { borderWidth: 1, borderColor: '#e5e1ea', borderRadius: 16, backgroundColor: '#faf9fc' },
+  agreementScroll: { maxHeight: 220 },
+  agreementContent: { padding: 14 },
+  agreementText: { color: '#413a4c', fontSize: 14, lineHeight: 22 },
+  sectionTitle: { color: '#19151e', fontSize: 14, lineHeight: 22, fontWeight: '700' },
   heading: { fontSize: 18, fontWeight: '600' },
 });
