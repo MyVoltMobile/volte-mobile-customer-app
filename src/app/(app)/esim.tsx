@@ -1,3 +1,4 @@
+import { EsimPurchase } from '@/components/ui/esim-purchase';
 import {
   useCallback,
   useEffect,
@@ -44,9 +45,6 @@ type LoadState =
   | 'loading'
   | 'ready'
   | 'error';
-
-const SHOP_URL =
-  'https://voltemobile.com/shop';
 
 function formatDate(
   value: string | null,
@@ -315,6 +313,7 @@ function EsimCard({
 }
 
 export default function EsimScreen() {
+  const [section, setSection] = useState<'owned' | 'purchase' | null>('owned');
   const [
     esims,
     setEsims,
@@ -367,9 +366,24 @@ export default function EsimScreen() {
   return (
     <ShellScreen
       eyebrow="Services"
-      title="My eSIM"
-      description="Your VoLTE Mobile eSIM plans and installation details."
+      title="Global eSIM"
+      description="Manage your eSIMs or find a data plan for your next trip."
     >
+      {(['owned', 'purchase'] as const).map(item => (
+        <View key={item} style={styles.section}>
+          <Card>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: section === item }}
+              onPress={() => setSection(current => current === item ? null : item)}
+              style={styles.sectionHeader}>
+              <View style={styles.sectionCopy}>
+                <Text style={styles.stateTitle}>{item === 'owned' ? 'My eSIMs' : 'Purchase eSIM'}</Text>
+                <Text style={styles.stateText}>{item === 'owned' ? 'Your plans and installation details' : 'Find data plans by destination'}</Text>
+              </View>
+              <Text importantForAccessibility="no" style={styles.sectionChevron}>{section === item ? '−' : '+'}</Text>
+            </Pressable>
+          </Card>
+          {item === 'purchase' && section === item ? <EsimPurchase onReturn={() => void loadEsims()} /> : null}
+          {item === 'owned' && section === item ? <>
       {loadState ===
       'loading' ? (
         <Card>
@@ -495,22 +509,7 @@ export default function EsimScreen() {
             </View>
           </Card>
 
-          <Button
-            label="Shop eSIM"
-            onPress={() => {
-              void Linking
-                .openURL(
-                  SHOP_URL,
-                )
-                .catch(() => {
-                  /*
-                   * Browser launch failure
-                   * leaves the customer
-                   * safely in the app.
-                   */
-                });
-            }}
-          />
+          <Button label="Purchase eSIM" onPress={() => setSection('purchase')} />
         </View>
       ) : null}
 
@@ -536,12 +535,19 @@ export default function EsimScreen() {
           )}
         </View>
       ) : null}
+          </> : null}
+        </View>
+      ))}
     </ShellScreen>
   );
 }
 
 const styles =
   StyleSheet.create({
+  section: { gap: Spacing.md },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, minHeight: 64 },
+  sectionCopy: { flex: 1, gap: 4 },
+  sectionChevron: { color: Colors.brand.primary, fontSize: 24 },
     cardContent: {
       gap:
         Spacing.lg,
