@@ -25,14 +25,20 @@ type Plan = {
   price: number;
   currency: string;
   purchasable: boolean;
+  networkInfo?: string;
+  continuedData?: { available: boolean | null; speedKbps: number | null };
 };
 
-export function EsimPurchase({ onReturn }: { onReturn: () => void }) {
+export function EsimPurchase({ initialDestination, onReturn }: {
+  initialDestination?: Destination;
+  onReturn: () => void;
+}) {
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [catalogueAttempt, setCatalogueAttempt] = useState(0);
   const [catalogueError, setCatalogueError] = useState(false);
-  const [query, setQuery] = useState('');
-  const [destination, setDestination] = useState<Destination | null>(null);
+  const [query, setQuery] = useState(initialDestination?.name ?? '');
+  const [destination, setDestination] = useState<Destination | null>(initialDestination ?? null);
   const [days, setDays] = useState(7);
   const [levels, setLevels] = useState(() => activities.map(() => 1));
   const [planning, setPlanning] = useState(false);
@@ -61,6 +67,7 @@ export function EsimPurchase({ onReturn }: { onReturn: () => void }) {
 
   function clearQuote() {
     setPlans(null);
+    setSelectedPlan(null);
     setError('');
   }
 
@@ -165,15 +172,31 @@ export function EsimPurchase({ onReturn }: { onReturn: () => void }) {
         </View>
         <Button label={planning ? 'Finding plans…' : 'Find matching plans'} disabled={planning || !destination}
           onPress={() => void findPlans()} />
-        {plans?.map(plan => (
-          <View key={plan.id} style={styles.plan}>
-            <Text style={styles.label}>{plan.name}</Text>
-            <Text style={styles.caption}>{plan.dataAllowance} · {plan.validityDays} days</Text>
-            <Text style={styles.label}>{new Intl.NumberFormat('en-JM', {
-              style: 'currency', currency: plan.currency, currencyDisplay: 'code',
-            }).format(plan.price)}</Text>
-          </View>
-        ))}
+        {plans?.map(plan => {
+          const selected = selectedPlan === plan.id;
+          const allowance = plan.dataAllowance
+            .replace(/^Total\s*(\d+(?:\.\d+)?)\s*GB$/i, '$1 GB total')
+            .replace(/^Daily\s*(\d+(?:\.\d+)?)\s*GB$/i, '$1 GB per day')
+            .replace(/^unlimited$/i, 'Unlimited data');
+          const networks = plan.networkInfo?.replace(/\[[^\]]*\]/g, '')
+            .replace(/(?:^|\|)[A-Z]{2}:/g, ' ').replace(/\|/g, ' · ').trim();
+          return (
+            <Pressable key={plan.id} accessibilityRole="radio" accessibilityState={{ checked: selected }}
+              onPress={() => setSelectedPlan(plan.id)} style={[styles.plan, selected && styles.selected]}>
+              <View style={styles.row}>
+                <Text style={styles.label}>{allowance}</Text>
+                <Text style={styles.caption}>{selected ? 'Selected' : 'Select'}</Text>
+              </View>
+              <Text style={styles.caption}>{plan.validityDays} days{networks ? ' · ' + networks : ''}</Text>
+              {plan.continuedData?.available && plan.continuedData.speedKbps ?
+                <Text style={styles.caption}>After high-speed data: up to {plan.continuedData.speedKbps} kbps</Text> : null}
+              <Text style={styles.label}>{new Intl.NumberFormat('en-JM', {
+                style: 'currency', currency: plan.currency, currencyDisplay: 'code',
+              }).format(plan.price)}</Text>
+            </Pressable>
+          );
+        })}
+        {selectedPlan ? <Text style={styles.caption}>Choose this plan on the storefront to complete your purchase.</Text> : null}
         {plans?.length === 0 ? <Text style={styles.caption}>No purchasable recommendations for this trip.</Text> : null}
         <Button label="Shop on VoLTE Mobile" variant="secondary" disabled={opening}
           onPress={() => void openStore()} />
