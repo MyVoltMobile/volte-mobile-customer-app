@@ -1,3 +1,5 @@
+import { SlideToConfirm } from '@/components/ui/slide-to-confirm';
+import { IptvUpgrade } from '@/components/ui/iptv-upgrade';
 import { IptvChannelLineup } from '@/components/ui/iptv-channel-lineup';
 import * as WebBrowser from 'expo-web-browser';
 import { authenticatedCustomerFetch } from '@/lib/customer/customer-api';
@@ -70,6 +72,7 @@ function formatDate(
           year: 'numeric',
           month: 'short',
           day: 'numeric',
+          timeZone: /^\d{4}-\d{2}-\d{2}$/.test(value) ? 'UTC' : undefined,
         },
       );
 }
@@ -323,18 +326,27 @@ export default function IptvScreen() {
       title="My IPTV"
       description="Your VoLTE Mobile entertainment service."
     >
-      {renewals.map((renewal) => (
-        <Card key={renewal.subscriptionId}>
-          <View style={styles.card}>
-            <Text style={styles.title}>{renewal.serviceName} renewal</Text>
-            <Detail label="Amount" value={`J${(renewal.amountCents / 100).toFixed(2)}`} />
-            <Detail label="Renewal date" value={formatDate(renewal.renewalDate)} />
-            <Pressable accessibilityRole="button" disabled={paying} onPress={() => void payRenewal(renewal.subscriptionId)} style={styles.retry}>
-              <Text style={styles.retryText}>{paying ? 'Opening checkout…' : 'Pay renewal'}</Text>
-            </Pressable>
-          </View>
-        </Card>
-      ))}
+      {renewals.map((renewal) => {
+        const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Jamaica',
+          year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+        const early = /^\d{4}-\d{2}-\d{2}$/.test(renewal.renewalDate) && renewal.renewalDate > today;
+        return (
+          <Card key={renewal.subscriptionId}>
+            <View style={styles.card}>
+              <Text style={styles.title}>{renewal.serviceName} renewal</Text>
+              {early ? <Text style={styles.upcoming}>Upcoming · No payment due yet</Text> : null}
+              <Detail label="Renewal amount" value={`J$${(renewal.amountCents / 100).toFixed(2)}`} />
+              <Detail label="Next renewal" value={formatDate(renewal.renewalDate)} />
+              <SlideToConfirm muted={early} busy={paying}
+                label={early ? 'Slide to renew early' : 'Slide to pay renewal'}
+                confirmationTitle={early ? 'Renew early?' : 'Pay renewal?'}
+                confirmationMessage="Continue to Scotia to pay for your IPTV renewal."
+                onConfirm={() => void payRenewal(renewal.subscriptionId)} />
+            </View>
+          </Card>
+        );
+      })}
+      <IptvUpgrade onActivated={() => { void load(); void loadRenewals(); }} />
       <IptvChannelLineup />
       {renewalError ? <Text accessibilityLiveRegion="polite" style={styles.helper}>{renewalError}</Text> : null}
       {state ===
@@ -478,6 +490,7 @@ export default function IptvScreen() {
 
 const styles =
   StyleSheet.create({
+    upcoming: { color: '#4e465a', fontWeight: '700' },
     list: {
       gap:
         Spacing.md,

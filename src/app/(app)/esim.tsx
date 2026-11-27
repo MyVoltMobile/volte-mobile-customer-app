@@ -1,3 +1,4 @@
+import { EsimPurchase } from '@/components/ui/esim-purchase';
 import {
   useCallback,
   useEffect,
@@ -5,12 +6,14 @@ import {
 } from 'react';
 
 import { Image } from 'expo-image';
+import { customerApiBaseUrl } from '@/lib/customer/customer-api';
 
 import {
   ActivityIndicator,
   Linking,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -44,9 +47,6 @@ type LoadState =
   | 'loading'
   | 'ready'
   | 'error';
-
-const SHOP_URL =
-  'https://voltemobile.com/shop';
 
 function formatDate(
   value: string | null,
@@ -314,7 +314,25 @@ function EsimCard({
   );
 }
 
+const sections = [
+  { id: 'owned', title: 'My eSIMs', subtitle: 'Your plans and installation details' },
+  { id: 'purchase', title: 'Purchase eSIM', subtitle: 'Find a plan for your destination' },
+  { id: 'compatibility', title: 'Does your phone support eSIM?', subtitle: 'Check your device before you buy' },
+] as const;
+
+const destinations = [
+  { code: 'US', name: 'United States', image: 'north-america' },
+  { code: 'JP', name: 'Japan', image: 'japan' },
+  { code: 'CN', name: 'China', image: 'china' },
+  { code: 'HK', name: 'Hong Kong', image: 'hong-kong-macau' },
+  { code: 'FR', name: 'France', image: 'europe' },
+];
+
 export default function EsimScreen() {
+  const [section, setSection] = useState<(typeof sections)[number]['id'] | null>(null);
+  const [heroUrl, setHeroUrl] = useState<string | null>(null);
+  const [slideWidth, setSlideWidth] = useState(0);
+  const [featured, setFeatured] = useState<(typeof destinations)[number] | null>(null);
   const [
     esims,
     setEsims,
@@ -361,15 +379,65 @@ export default function EsimScreen() {
     );
 
   useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    void fetch(customerApiBaseUrl() + '/api/public/app-esim-hero-image', {
+      signal: controller.signal,
+    }).then(async response => {
+      if (!response.ok) return;
+      const { imageUrl } = await response.json();
+      if (!controller.signal.aborted && typeof imageUrl === 'string' && imageUrl.startsWith('https://')) {
+        setHeroUrl(imageUrl);
+      }
+    }).catch(() => {
+      // Keep the bundled hero when branding is unavailable.
+    }).finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
     void loadEsims();
   }, [loadEsims]);
 
   return (
-    <ShellScreen
-      eyebrow="Services"
-      title="My eSIM"
-      description="Your VoLTE Mobile eSIM plans and installation details."
-    >
+    <ShellScreen header={
+      <View style={styles.hero}>
+        <Image source={heroUrl ? { uri: heroUrl } : require('../../../assets/images/esim-travel-hero.jpg')}
+          onError={() => setHeroUrl(null)}
+          style={styles.heroImage} contentFit="cover" contentPosition="top" accessible={false} />
+        <View style={styles.heroCaption}>
+          <Text style={styles.heroEyebrow}>Services</Text>
+          <Text accessibilityRole="header" style={styles.heroTitle}>Global eSIM</Text>
+          <Text style={styles.heroTagline}>Stay connected. Wherever you go.</Text>
+        </View>
+      </View>
+    }>
+      {sections.map(({ id: item, title, subtitle }) => (
+        <View key={item} style={styles.section}>
+          <Card>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: section === item }}
+              onPress={() => { setFeatured(null); setSection(current => current === item ? null : item); }}
+              style={styles.sectionHeader}>
+              <View style={styles.sectionCopy}>
+                <Text style={styles.stateTitle}>{title}</Text>
+                <Text style={styles.stateText}>{subtitle}</Text>
+              </View>
+              <Text importantForAccessibility="no" style={styles.sectionChevron}>{section === item ? '−' : '+'}</Text>
+            </Pressable>
+          </Card>
+          {item === 'purchase' && section === item ? <EsimPurchase key={featured?.code ?? 'search'} initialDestination={featured ?? undefined} onReturn={() => void loadEsims()} /> : null}
+          {item === 'compatibility' && section === item ? (
+            <Card><View style={styles.sectionCopy}>
+              <Text style={styles.stateTitle}>Before you buy</Text>
+              <Text style={styles.stateText}>Your phone needs to be carrier unlocked and support eSIM for its exact model and region.</Text>
+              <Text style={styles.stateTitle}>Quick device check</Text>
+              <Text style={styles.stateText}>Dial *#06# and look for an EID. If you see one, the phone generally supports eSIM. Check carrier unlock status separately.</Text>
+            </View></Card>
+          ) : null}
+          {item === 'owned' && section === item ? <>
       {loadState ===
       'loading' ? (
         <Card>
@@ -495,22 +563,7 @@ export default function EsimScreen() {
             </View>
           </Card>
 
-          <Button
-            label="Shop eSIM"
-            onPress={() => {
-              void Linking
-                .openURL(
-                  SHOP_URL,
-                )
-                .catch(() => {
-                  /*
-                   * Browser launch failure
-                   * leaves the customer
-                   * safely in the app.
-                   */
-                });
-            }}
-          />
+          <Button label="Purchase eSIM" onPress={() => setSection('purchase')} />
         </View>
       ) : null}
 
@@ -536,12 +589,56 @@ export default function EsimScreen() {
           )}
         </View>
       ) : null}
+          </> : null}
+        </View>
+      ))}
+      <View style={styles.section}>
+        <Text accessibilityRole="header" style={styles.stateTitle}>You may also like</Text>
+        <View onLayout={({ nativeEvent }) => setSlideWidth(nativeEvent.layout.width)}>
+        {slideWidth > 0 ? (
+          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+            accessibilityLabel="Destination suggestions">
+
+          {destinations.map(item => (
+            <Pressable key={item.code} accessibilityRole="button" accessibilityLabel={'Explore ' + item.name}
+              onPress={() => { setFeatured(item); setSection('purchase'); }} style={[styles.destination, { width: slideWidth }]}>
+              <Image source={{ uri: 'https://voltemobile.com/images/esim/destinations/' + item.image + '.webp' }}
+                style={styles.destinationImage} contentFit="cover" accessible={false} />
+              <View style={styles.destinationCaption}>
+                <Text style={styles.destinationName}>{item.name}</Text>
+                <Text style={styles.destinationArrow} importantForAccessibility="no">→</Text>
+              </View>
+            </Pressable>
+          ))}
+          </ScrollView>
+        ) : null}
+        </View>
+      </View>
+      <Card><View style={styles.sectionCopy}>
+        <Text style={styles.stateTitle}>Digital activation</Text>
+        <Text style={styles.stateText}>After successful payment, your eSIM is provisioned and its installation details are linked securely to your VoLTE Mobile account.</Text>
+      </View></Card>
     </ShellScreen>
   );
 }
 
 const styles =
   StyleSheet.create({
+  hero: { borderRadius: 26, overflow: 'hidden', backgroundColor: '#e5eef0' },
+  heroImage: { width: '100%', aspectRatio: 1.06 },
+  heroCaption: { backgroundColor: '#fff', paddingHorizontal: 20, paddingVertical: 17, gap: 4 },
+  heroEyebrow: { color: '#a51661', fontWeight: '700', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' },
+  heroTitle: { color: Colors.text.primary, fontSize: 36, fontWeight: '800', letterSpacing: -1.4 },
+  heroTagline: { color: Colors.text.secondary, fontSize: 16, fontWeight: '600' },
+  destination: { backgroundColor: '#fff', borderRadius: 22, overflow: 'hidden' },
+  destinationImage: { width: '100%', aspectRatio: 1.55, backgroundColor: '#e5e0ed' },
+  destinationCaption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  destinationName: { color: Colors.text.primary, fontSize: 20, fontWeight: '700', flexShrink: 1 },
+  destinationArrow: { color: '#a51661', fontSize: 22, marginLeft: 12 },
+  section: { gap: Spacing.md },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, minHeight: 64 },
+  sectionCopy: { flex: 1, gap: 4 },
+  sectionChevron: { color: Colors.brand.primary, fontSize: 24 },
     cardContent: {
       gap:
         Spacing.lg,
