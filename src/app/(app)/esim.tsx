@@ -6,6 +6,7 @@ import {
 } from 'react';
 
 import { Image } from 'expo-image';
+import { customerApiBaseUrl } from '@/lib/customer/customer-api';
 
 import {
   ActivityIndicator,
@@ -329,6 +330,7 @@ const destinations = [
 
 export default function EsimScreen() {
   const [section, setSection] = useState<(typeof sections)[number]['id'] | null>(null);
+  const [heroUrl, setHeroUrl] = useState<string | null>(null);
   const [slideWidth, setSlideWidth] = useState(0);
   const [featured, setFeatured] = useState<(typeof destinations)[number] | null>(null);
   const [
@@ -377,13 +379,34 @@ export default function EsimScreen() {
     );
 
   useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    void fetch(customerApiBaseUrl() + '/api/public/app-esim-hero-image', {
+      signal: controller.signal,
+    }).then(async response => {
+      if (!response.ok) return;
+      const { imageUrl } = await response.json();
+      if (!controller.signal.aborted && typeof imageUrl === 'string' && imageUrl.startsWith('https://')) {
+        setHeroUrl(imageUrl);
+      }
+    }).catch(() => {
+      // Keep the bundled hero when branding is unavailable.
+    }).finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
     void loadEsims();
   }, [loadEsims]);
 
   return (
     <ShellScreen header={
       <View style={styles.hero}>
-        <Image source={require('../../../assets/images/esim-travel-hero.jpg')}
+        <Image source={heroUrl ? { uri: heroUrl } : require('../../../assets/images/esim-travel-hero.jpg')}
+          onError={() => setHeroUrl(null)}
           style={styles.heroImage} contentFit="cover" contentPosition="top" accessible={false} />
         <View style={styles.heroCaption}>
           <Text style={styles.heroEyebrow}>Services</Text>
