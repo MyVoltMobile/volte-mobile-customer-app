@@ -15,7 +15,7 @@ import {
 
 type ShellScreenProps = {
   eyebrow?: string;
-  title: string;
+  title?: string;
   description?: string;
   header?: ReactNode;
   children?: ReactNode;
@@ -55,6 +55,7 @@ export function ShellScreen({
           </Text>
         ) : null}
 
+        {title ? (
         <Text
           style={[
             styles.title,
@@ -64,6 +65,7 @@ export function ShellScreen({
         >
           {title}
         </Text>
+        ) : null}
 
         {description ? (
           <Text

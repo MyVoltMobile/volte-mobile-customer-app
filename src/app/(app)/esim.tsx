@@ -329,6 +329,7 @@ const destinations = [
 
 export default function EsimScreen() {
   const [section, setSection] = useState<(typeof sections)[number]['id'] | null>(null);
+  const [slideWidth, setSlideWidth] = useState(0);
   const [featured, setFeatured] = useState<(typeof destinations)[number] | null>(null);
   const [
     esims,
@@ -380,14 +381,17 @@ export default function EsimScreen() {
   }, [loadEsims]);
 
   return (
-    <ShellScreen
-      eyebrow="Services"
-      title="Global eSIM"
-    >
+    <ShellScreen header={
       <View style={styles.hero}>
-        <Text accessibilityRole="header" style={styles.heroTitle}>Stay connected. Wherever you go.</Text>
-        <Text style={styles.heroCopy}>Find a travel data plan and get your digital activation details after successful payment.</Text>
+        <Image source={require('../../../assets/images/esim-travel-hero.jpg')}
+          style={styles.heroImage} contentFit="cover" contentPosition="top" accessible={false} />
+        <View style={styles.heroCaption}>
+          <Text style={styles.heroEyebrow}>Services</Text>
+          <Text accessibilityRole="header" style={styles.heroTitle}>Global eSIM</Text>
+          <Text style={styles.heroTagline}>Stay connected. Wherever you go.</Text>
+        </View>
       </View>
+    }>
       {sections.map(({ id: item, title, subtitle }) => (
         <View key={item} style={styles.section}>
           <Card>
@@ -567,16 +571,25 @@ export default function EsimScreen() {
       ))}
       <View style={styles.section}>
         <Text accessibilityRole="header" style={styles.stateTitle}>You may also like</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.destinations}>
+        <View onLayout={({ nativeEvent }) => setSlideWidth(nativeEvent.layout.width)}>
+        {slideWidth > 0 ? (
+          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+            accessibilityLabel="Destination suggestions">
+
           {destinations.map(item => (
             <Pressable key={item.code} accessibilityRole="button" accessibilityLabel={'Explore ' + item.name}
-              onPress={() => { setFeatured(item); setSection('purchase'); }} style={styles.destination}>
+              onPress={() => { setFeatured(item); setSection('purchase'); }} style={[styles.destination, { width: slideWidth }]}>
               <Image source={{ uri: 'https://voltemobile.com/images/esim/destinations/' + item.image + '.webp' }}
-                style={styles.destinationImage} contentFit="cover" />
-              <Text style={styles.destinationName}>{item.name} ›</Text>
+                style={styles.destinationImage} contentFit="cover" accessible={false} />
+              <View style={styles.destinationCaption}>
+                <Text style={styles.destinationName}>{item.name}</Text>
+                <Text style={styles.destinationArrow} importantForAccessibility="no">→</Text>
+              </View>
             </Pressable>
           ))}
-        </ScrollView>
+          </ScrollView>
+        ) : null}
+        </View>
       </View>
       <Card><View style={styles.sectionCopy}>
         <Text style={styles.stateTitle}>Digital activation</Text>
@@ -588,13 +601,17 @@ export default function EsimScreen() {
 
 const styles =
   StyleSheet.create({
-  hero: { backgroundColor: '#181528', borderRadius: 26, padding: 23, gap: 12 },
-  heroTitle: { color: '#fff', fontSize: 31, fontWeight: '800', lineHeight: 36 },
-  heroCopy: { color: '#e2deed', fontSize: 15, lineHeight: 22 },
-  destinations: { gap: 12 },
-  destination: { width: 158, backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden' },
-  destinationImage: { width: '100%', height: 102, backgroundColor: '#e5e0ed' },
-  destinationName: { color: Colors.text.primary, fontWeight: '700', padding: 12 },
+  hero: { borderRadius: 26, overflow: 'hidden', backgroundColor: '#e5eef0' },
+  heroImage: { width: '100%', aspectRatio: 1.06 },
+  heroCaption: { backgroundColor: '#fff', paddingHorizontal: 20, paddingVertical: 17, gap: 4 },
+  heroEyebrow: { color: '#a51661', fontWeight: '700', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' },
+  heroTitle: { color: Colors.text.primary, fontSize: 36, fontWeight: '800', letterSpacing: -1.4 },
+  heroTagline: { color: Colors.text.secondary, fontSize: 16, fontWeight: '600' },
+  destination: { backgroundColor: '#fff', borderRadius: 22, overflow: 'hidden' },
+  destinationImage: { width: '100%', aspectRatio: 1.55, backgroundColor: '#e5e0ed' },
+  destinationCaption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  destinationName: { color: Colors.text.primary, fontSize: 20, fontWeight: '700', flexShrink: 1 },
+  destinationArrow: { color: '#a51661', fontSize: 22, marginLeft: 12 },
   section: { gap: Spacing.md },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, minHeight: 64 },
   sectionCopy: { flex: 1, gap: 4 },
