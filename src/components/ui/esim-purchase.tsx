@@ -101,9 +101,12 @@ export function EsimPurchase({ initialDestination, onReturn }: {
     if (opening) return;
     setOpening(true);
     setError('');
+    const selection = destination && selectedPlan ? new URLSearchParams({
+      country: destination.code, tripDays: String(days), dailyUsageGb: daily.toFixed(2), plan: selectedPlan,
+    }) : null;
     const path = destination ? '?destination=' + encodeURIComponent(destination.code) + '#esim-plans' : '';
     try {
-      await WebBrowser.openBrowserAsync(storefront + '/esim' + path);
+      await WebBrowser.openBrowserAsync(selection ? storefront + '/esim/selected?' + selection : storefront + '/esim' + path);
       onReturn();
     } catch {
       setError('The eSIM website could not be opened. Try again.');
@@ -196,9 +199,9 @@ export function EsimPurchase({ initialDestination, onReturn }: {
             </Pressable>
           );
         })}
-        {selectedPlan ? <Text style={styles.caption}>Choose this plan on the storefront to complete your purchase.</Text> : null}
+        {selectedPlan ? <Text style={styles.caption}>Review your selected plan on the storefront before checkout.</Text> : null}
         {plans?.length === 0 ? <Text style={styles.caption}>No purchasable recommendations for this trip.</Text> : null}
-        <Button label="Shop on VoLTE Mobile" variant="secondary" disabled={opening}
+        <Button label={selectedPlan ? "Continue with selected plan" : "Browse eSIMs on website"} variant="secondary" disabled={opening}
           onPress={() => void openStore()} />
         {error ? <Text accessibilityLiveRegion="polite" style={styles.caption}>{error}</Text> : null}
       </View>
