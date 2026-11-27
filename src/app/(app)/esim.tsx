@@ -12,6 +12,7 @@ import {
   Linking,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -312,8 +313,23 @@ function EsimCard({
   );
 }
 
+const sections = [
+  { id: 'owned', title: 'My eSIMs', subtitle: 'Your plans and installation details' },
+  { id: 'purchase', title: 'Purchase eSIM', subtitle: 'Find a plan for your destination' },
+  { id: 'compatibility', title: 'Does your phone support eSIM?', subtitle: 'Check your device before you buy' },
+] as const;
+
+const destinations = [
+  { code: 'US', name: 'United States', image: 'north-america' },
+  { code: 'JP', name: 'Japan', image: 'japan' },
+  { code: 'CN', name: 'China', image: 'china' },
+  { code: 'HK', name: 'Hong Kong', image: 'hong-kong-macau' },
+  { code: 'FR', name: 'France', image: 'europe' },
+];
+
 export default function EsimScreen() {
-  const [section, setSection] = useState<'owned' | 'purchase' | null>('owned');
+  const [section, setSection] = useState<(typeof sections)[number]['id'] | null>(null);
+  const [featured, setFeatured] = useState<(typeof destinations)[number] | null>(null);
   const [
     esims,
     setEsims,
@@ -367,22 +383,33 @@ export default function EsimScreen() {
     <ShellScreen
       eyebrow="Services"
       title="Global eSIM"
-      description="Manage your eSIMs or find a data plan for your next trip."
     >
-      {(['owned', 'purchase'] as const).map(item => (
+      <View style={styles.hero}>
+        <Text accessibilityRole="header" style={styles.heroTitle}>Stay connected. Wherever you go.</Text>
+        <Text style={styles.heroCopy}>Find a travel data plan and get your digital activation details after successful payment.</Text>
+      </View>
+      {sections.map(({ id: item, title, subtitle }) => (
         <View key={item} style={styles.section}>
           <Card>
             <Pressable accessibilityRole="button" accessibilityState={{ expanded: section === item }}
-              onPress={() => setSection(current => current === item ? null : item)}
+              onPress={() => { setFeatured(null); setSection(current => current === item ? null : item); }}
               style={styles.sectionHeader}>
               <View style={styles.sectionCopy}>
-                <Text style={styles.stateTitle}>{item === 'owned' ? 'My eSIMs' : 'Purchase eSIM'}</Text>
-                <Text style={styles.stateText}>{item === 'owned' ? 'Your plans and installation details' : 'Find data plans by destination'}</Text>
+                <Text style={styles.stateTitle}>{title}</Text>
+                <Text style={styles.stateText}>{subtitle}</Text>
               </View>
               <Text importantForAccessibility="no" style={styles.sectionChevron}>{section === item ? '−' : '+'}</Text>
             </Pressable>
           </Card>
-          {item === 'purchase' && section === item ? <EsimPurchase onReturn={() => void loadEsims()} /> : null}
+          {item === 'purchase' && section === item ? <EsimPurchase key={featured?.code ?? 'search'} initialDestination={featured ?? undefined} onReturn={() => void loadEsims()} /> : null}
+          {item === 'compatibility' && section === item ? (
+            <Card><View style={styles.sectionCopy}>
+              <Text style={styles.stateTitle}>Before you buy</Text>
+              <Text style={styles.stateText}>Your phone needs to be carrier unlocked and support eSIM for its exact model and region.</Text>
+              <Text style={styles.stateTitle}>Quick device check</Text>
+              <Text style={styles.stateText}>Dial *#06# and look for an EID. If you see one, the phone generally supports eSIM. Check carrier unlock status separately.</Text>
+            </View></Card>
+          ) : null}
           {item === 'owned' && section === item ? <>
       {loadState ===
       'loading' ? (
@@ -538,12 +565,36 @@ export default function EsimScreen() {
           </> : null}
         </View>
       ))}
+      <View style={styles.section}>
+        <Text accessibilityRole="header" style={styles.stateTitle}>You may also like</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.destinations}>
+          {destinations.map(item => (
+            <Pressable key={item.code} accessibilityRole="button" accessibilityLabel={'Explore ' + item.name}
+              onPress={() => { setFeatured(item); setSection('purchase'); }} style={styles.destination}>
+              <Image source={{ uri: 'https://voltemobile.com/images/esim/destinations/' + item.image + '.webp' }}
+                style={styles.destinationImage} contentFit="cover" />
+              <Text style={styles.destinationName}>{item.name} ›</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+      <Card><View style={styles.sectionCopy}>
+        <Text style={styles.stateTitle}>Digital activation</Text>
+        <Text style={styles.stateText}>After successful payment, your eSIM is provisioned and its installation details are linked securely to your VoLTE Mobile account.</Text>
+      </View></Card>
     </ShellScreen>
   );
 }
 
 const styles =
   StyleSheet.create({
+  hero: { backgroundColor: '#181528', borderRadius: 26, padding: 23, gap: 12 },
+  heroTitle: { color: '#fff', fontSize: 31, fontWeight: '800', lineHeight: 36 },
+  heroCopy: { color: '#e2deed', fontSize: 15, lineHeight: 22 },
+  destinations: { gap: 12 },
+  destination: { width: 158, backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden' },
+  destinationImage: { width: '100%', height: 102, backgroundColor: '#e5e0ed' },
+  destinationName: { color: Colors.text.primary, fontWeight: '700', padding: 12 },
   section: { gap: Spacing.md },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, minHeight: 64 },
   sectionCopy: { flex: 1, gap: 4 },
